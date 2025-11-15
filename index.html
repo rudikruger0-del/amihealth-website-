@@ -1,45 +1,91 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AMI – Smarter diagnostics. Better care.</title>
-  <meta name="description" content="AMI: Multimodal medical AI for scans, blood tests, notes and vitals. Patent-pending. Built for clinicians and hospitals." />
-  <meta name="theme-color" content="#1A4B84" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMI Health – Artificial Medical Intelligence</title>
+<style>
+body { margin:0; font-family:Arial; background:#ffffff; color:#222; }
+header {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:15px 25px; background:white; position:sticky; top:0; z-index:50;
+  border-bottom:1px solid #e5e5e5;
+}
+header img { height:55px; }
+nav a { margin-left:25px; text-decoration:none; color:#333; font-weight:bold; cursor:pointer; }
+.hero-video { width:100%; max-height:500px; object-fit:cover; display:block; }
+section { padding:60px 25px; max-width:1050px; margin:auto; }
+h2 { margin-bottom:15px; font-size:28px; }
+footer {
+  background:#111; color:white; padding:40px 20px; text-align:center;
+}
+.btn {
+  background:#0077ff; color:white; padding:12px 22px; border-radius:6px;
+  text-decoration:none; display:inline-block; margin-top:10px;
+}
+</style>
 </head>
+
 <body>
-  <header class="site-header">
-    <div class="container header-inner">
-      <div class="brand">
-        <img src="assets/logo.png" alt="AMI logo" class="logo" />
-        <p class="tagline">Smarter diagnostics. Better care.</p>
-      </div>
-      <nav class="main-nav">
-        <a href="#how">How it works</a>
-        <a href="#solutions">Solutions</a>
-        <a href="#contact">Contact</a>
-      </nav>
-    </div>
-  </header>
 
-  <main>
-    <section class="hero">
-      <div class="container">
-        <h2>Smarter diagnostics. Better care.</h2>
-        <p class="lead">
-          AMI analyzes medical scans, blood tests, symptoms and clinician notes —
-          together — to deliver fast, reliable diagnostic support for clinicians and hospitals.
-        </p>
-      </div>
-    </section>
-  </main>
+<header>
+  <img src="logo.png" alt="AMI Logo">
+  <nav>
+    <a href="#how">How It Works</a>
+    <a href="#solutions">Solutions</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#contact">Contact</a>
+  </nav>
+</header>
 
-  <footer class="site-footer">
-    <div class="container">
-      <p>© 2025 AMI — Artificial Medical Intelligence</p>
-    </div>
-  </footer>
+<video class="hero-video" autoplay muted playsinline loop>
+  <source src="ami4.mp4" type="video/mp4">
+</video>
+
+<section id="intro">
+  <h2>Welcome to AMI Health</h2>
+  <p>AMI is an advanced Artificial Intelligence platform that analyzes medical scans, blood tests, and text notes instantly.</p>
+  <a class="btn" href="#pricing">Get Started</a>
+</section>
+
+<section id="how">
+  <h2>How It Works</h2>
+  <p>Our AI analyzes multiple inputs at once: X-rays, mammograms, ultrasounds, CT scans, blood data, and symptoms. A unified medical report is produced instantly.</p>
+</section>
+
+<section id="solutions">
+  <h2>Solutions</h2>
+  <p><b>For Doctors:</b> Faster diagnosis support.</p>
+  <p><b>For Clinics:</b> Automated reporting.</p>
+  <p><b>For Labs:</b> Instant blood interpretation.</p>
+</section>
+
+<section id="pricing">
+  <h2>Pricing</h2>
+  <p>Starter: R199/month</p>
+  <p>Professional: R399/month</p>
+  <p>Enterprise: Contact us</p>
+</section>
+
+<section id="contact">
+  <h2>Contact</h2>
+  <p>Email: support@amihealth.co.za</p>
+  <p>Phone: +27 00 000 0000</p>
+</section>
+
+<footer>
+  <p>© 2025 AMI Health. All Rights Reserved.</p>
+</footer>
+
+<script>
+document.querySelectorAll('a[href^="#"]').forEach(link=>{
+  link.addEventListener('click',function(e){
+    e.preventDefault();
+    const t=document.querySelector(this.getAttribute('href'));
+    if(t){ t.scrollIntoView({behavior:'smooth'}); }
+  });
+});
+</script>
+
 </body>
 </html>
