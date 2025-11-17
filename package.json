@@ -1,0 +1,12 @@
+{
+  "name": "ami-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "api/test.js",
+  "scripts": {
+    "start": "node api/test.js"
+  },
+  "dependencies": {
+    "pg": "^8.11.1"
+  }
+}
