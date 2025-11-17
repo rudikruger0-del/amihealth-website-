@@ -2,50 +2,39 @@
 import pool from './db.js';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'please_set_a_secret';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Only POST allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Only POST allowed' });
 
-  const { email, password } = req.body || {};
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password required' });
-  }
+  const { email, password, displayName } = req.body || {};
+  if (!email || !password) return res.status(400).json({ error: 'email & password required' });
 
   try {
     const hashed = await bcrypt.hash(password, 10);
-    const apiKey = "AMI_" + crypto.randomBytes(12).toString("hex");
+    const apiKey = 'AMI_' + crypto.randomBytes(12).toString('hex');
 
-    // Insert user
-    const insertUser = `
-      INSERT INTO users (email, password_hash, created_at)
-      VALUES ($1, $2, NOW())
-      RETURNING id, email
+    const insert = `
+      INSERT INTO users (email, password_hash, display_name, created_at)
+      VALUES ($1, $2, $3, now())
+      RETURNING id, email, display_name
     `;
-    const result = await pool.query(insertUser, [email, hashed]);
-    const userId = result.rows[0].id;
+    const r = await pool.query(insert, [email, hashed, displayName || null]);
+    const userId = r.rows[0].id;
 
-    // Insert api key
     await pool.query(
-      `INSERT INTO api_keys (user_id, api_key, active, created_at)
-       VALUES ($1, $2, TRUE, NOW())`,
+      `INSERT INTO api_keys (user_id, api_key, active, created_at) VALUES ($1, $2, true, now())`,
       [userId, apiKey]
     );
 
-    res.status(201).json({
-      success: true,
-      user: result.rows[0],
-      api_key: apiKey
-    });
+    const token = jwt.sign({ uid: userId, email: r.rows[0].email }, JWT_SECRET, { expiresIn: '30d' });
 
-  } catch (error) {
-    console.error("Register error:", error);
-
-    if (error.code === "23505") {
-      return res.status(409).json({ error: "Email already exists" });
-    }
-
-    res.status(500).json({ error: "Server error" });
+    return res.status(201).json({ success: true, user: r.rows[0], api_key: apiKey, token });
+  } catch (err) {
+    console.error('register error', err);
+    if (err.code === '23505') return res.status(409).json({ error: 'Email already exists' });
+    return res.status(500).json({ error: 'Server error' });
   }
 }
