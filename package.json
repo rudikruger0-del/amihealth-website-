@@ -7,6 +7,8 @@
     "start": "node api/test.js"
   },
   "dependencies": {
-    "pg": "^8.11.1"
+    "pg": "^8.11.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.0"
   }
 }
