@@ -24,7 +24,8 @@ export default async function handler(req, res) {
     }
 
     // 🔥 IMPORTANT: clean query (NO SPACES BEFORE INSERT)
-    const query = INSERT INTO users (email, password)
+    const query = `
+INSERT INTO users (email, password)
 VALUES ($1, $2)
 RETURNING id, email;
     `.trim();
