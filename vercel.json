@@ -2,11 +2,18 @@
   "version": 3,
   "framework": null,
   "functions": {
-    "api/login.js": {
+    "api/*.js": {
       "runtime": "nodejs18.x"
     }
   },
   "routes": [
-    { "src": "^/api/login$", "dest": "/api/login.js" }
+    {
+      "src": "^/api/(.*)$",
+      "dest": "/api/$1.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
   ]
 }
