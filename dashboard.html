@@ -1,54 +1,88 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>AMI Dashboard</title>
-  <style>
-    body {
-      background: #0b1024;
-      color: white;
-      font-family: Arial, sans-serif;
-      padding: 40px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background: red;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AMI Health — Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
 
-  <script type="module">
-    import { supabase } from "./lib/supabaseClient.js";
+    <script type="module">
+        import { supabase } from "./lib/supabaseClient.js";
 
-    async function checkUser() {
-      const { data } = await supabase.auth.getUser();
+        document.addEventListener("DOMContentLoaded", async () => {
+            const { data: { user } } = await supabase.auth.getUser();
 
-      if (!data.user) {
-        window.location.href = "/login.html";
-      } else {
-        document.getElementById("email").textContent =
-          data.user.email;
-      }
-    }
+            if (!user) {
+                window.location.href = "login.html";
+                return;
+            }
 
-    async function logout() {
-      await supabase.auth.signOut();
-      window.location.href = "/login.html";
-    }
+            document.getElementById("welcome").innerText =
+                "Welcome, " + user.email;
 
-    window.logout = logout;
+            document.getElementById("logout-btn").addEventListener("click", async () => {
+                await supabase.auth.signOut();
+                window.location.href = "login.html";
+            });
+        });
+    </script>
 
-    checkUser();
-  </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7faff;
+            margin: 0;
+        }
+        .topbar {
+            background: #002b47;
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .content {
+            padding: 30px;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-top: 25px;
+        }
+        button {
+            background: #00bcd4;
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: black;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body>
-  <h1>Welcome to AMI Dashboard</h1>
-  <p>Logged in as: <span id="email">Loading...</span></p>
-  <button onclick="logout()">Log Out</button>
+    <div class="topbar">
+        <div id="welcome">Loading...</div>
+        <button id="logout-btn">Logout</button>
+    </div>
+
+    <div class="content">
+        <h2>Your AMI Dashboard</h2>
+
+        <div class="card">
+            <h3>🧪 AI Lab Report Tools</h3>
+            <p>Upload blood reports and generate AMI AI-powered medical interpretations.</p>
+            <button onclick="alert('We will add the CBC upload tool next!')">Upload CBC Report</button>
+        </div>
+
+        <div class="card">
+            <h3>📊 Saved Reports</h3>
+            <p>This section will show all AI-generated reports saved under your account.</p>
+            <button onclick="alert('Report list coming soon!')">View Reports</button>
+        </div>
+    </div>
 </body>
 </html>
