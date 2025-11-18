@@ -1,52 +1,40 @@
-// api/login.js
-import { pool } from './db.js';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
+import { pool } from "./db.js";
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  try {
+    const chunks = [];
+    for await (const chunk of req) chunks.push(chunk);
+    const raw = Buffer.concat(chunks).toString();
+    let body = {};
 
-  try {
-    const { email, password } = req.body;
+    try {
+      body = JSON.parse(raw);
+    } catch {
+      return res.status(400).json({ error: "Invalid JSON" });
+    }
 
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password required" });
-    }
+    const { email, password } = body;
 
-    // Check if user exists
-    const userQuery = await pool.query(
-      "SELECT id, email, password FROM users WHERE email = $1 LIMIT 1",
-      [email]
-    );
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email & password required" });
+    }
 
-    if (userQuery.rows.length === 0) {
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
+    const result = await pool.query(
+      "SELECT id, email FROM users WHERE email = $1 AND password = $2 LIMIT 1",
+      [email, password]
+    );
 
-    const user = userQuery.rows[0];
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
 
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
+    return res.status(200).json({
+      message: "Login successful",
+      user: result.rows[0],
+    });
 
-    // Create login token
-    const token = jwt.sign(
-      { id: user.id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    return res.status(200).json({
-      message: "Login successful",
-      token: token
-    });
-
-  } catch (err) {
-    console.error("Login error:", err);
-    return res.status(500).json({ error: "Server error" });
-  }
+  } catch (err) {
+    console.error("LOGIN ERROR:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
 }
