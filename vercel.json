@@ -2,11 +2,13 @@
   "version": 3,
   "framework": null,
   "functions": {
-    "api/login.js": {
-      "runtime": "nodejs18.x"
+    "api/*.js": {
+      "runtime": "nodejs18.x",
+      "memory": 1024
     }
   },
   "routes": [
-    { "src": "/api/login", "dest": "api/login.js" }
+    { "src": "/api/(.*)", "dest": "/api/$1.js" },
+    { "src": "/(.*)", "dest": "/$1" }
   ]
 }
