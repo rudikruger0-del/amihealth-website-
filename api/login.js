@@ -1,40 +1,53 @@
-import { pool } from "./db.js";
+import { createClient } from "@supabase/supabase-js";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export default async function handler(req, res) {
-  try {
-    const chunks = [];
-    for await (const chunk of req) chunks.push(chunk);
-    const raw = Buffer.concat(chunks).toString();
-    let body = {};
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
-    try {
-      body = JSON.parse(raw);
-    } catch {
-      return res.status(400).json({ error: "Invalid JSON" });
-    }
+  const { email, password } = req.body;
 
-    const { email, password } = body;
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password required" });
+  }
 
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email & password required" });
-    }
+  // Fetch user from database
+  const { data: user, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("email", email)
+    .single();
 
-    const result = await pool.query(
-      "SELECT id, email FROM users WHERE email = $1 AND password = $2 LIMIT 1",
-      [email, password]
-    );
+  if (error || !user) {
+    return res.status(401).json({ error: "Invalid email or password" });
+  }
 
-    if (result.rows.length === 0) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
+  // Validate password
+  const passwordMatch = await bcrypt.compare(password, user.password_hash);
+  if (!passwordMatch) {
+    return res.status(401).json({ error: "Invalid email or password" });
+  }
 
-    return res.status(200).json({
-      message: "Login successful",
-      user: result.rows[0],
-    });
+  // Generate JWT token for login session
+  const token = jwt.sign(
+    {
+      id: user.id,
+      email: user.email,
+      role: user.role || "doctor"
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "24h" }
+  );
 
-  } catch (err) {
-    console.error("LOGIN ERROR:", err);
-    return res.status(500).json({ error: "Server error" });
-  }
+  return res.status(200).json({
+    message: "Login successful",
+    token: token
+  });
 }
