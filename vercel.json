@@ -1,14 +1,17 @@
 {
   "version": 3,
   "framework": null,
+  "buildCommand": "",
+  "outputDirectory": ".",
   "functions": {
-    "api/*.js": {
+    "api/**/*.js": {
       "runtime": "nodejs18.x",
+      "maxDuration": 10,
       "memory": 1024
     }
   },
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1.js" },
+    { "src": "/api/(.*)", "dest": "/api/$1" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
