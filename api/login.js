@@ -1,15 +1,16 @@
 import { supabase } from "../../lib/supabaseClient.js";
 import bcrypt from "bcryptjs";
 
+// Force Node runtime (NO Edge Runtime!)
+export const config = {
+  runtime: "nodejs18.x"
+};
+
+// Read raw body (required on Vercel Node functions)
 async function readBody(req) {
-  return new Promise((resolve, reject) => {
-    let data = "";
-    req.on("data", chunk => data += chunk);
-    req.on("end", () => {
-      try { resolve(JSON.parse(data)); }
-      catch { reject("Invalid JSON"); }
-    });
-  });
+  let data = "";
+  for await (const chunk of req) data += chunk;
+  return JSON.parse(data || "{}");
 }
 
 export default async function handler(req, res) {
@@ -19,8 +20,11 @@ export default async function handler(req, res) {
     }
 
     let body;
-    try { body = await readBody(req); }
-    catch { return res.status(400).json({ error: "Invalid JSON body" }); }
+    try {
+      body = await readBody(req);
+    } catch {
+      return res.status(400).json({ error: "Invalid JSON body" });
+    }
 
     const { email, password } = body;
 
@@ -28,6 +32,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Email and password required" });
     }
 
+    // Fetch user
     const { data: user, error } = await supabase
       .from("users")
       .select("*")
@@ -38,6 +43,7 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
+    // Check hashed password
     const valid = bcrypt.compareSync(password, user.password_hash);
 
     if (!valid) {
