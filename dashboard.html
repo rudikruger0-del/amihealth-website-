@@ -2,285 +2,446 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>AMI Health — Dashboard</title>
+  <title>AMI Health — Dashboard (Professional Edit)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="styles.css" />
   <style>
-    /* small dashboard-specific styles (keeps your existing look) */
-    .center { max-width:1100px; margin:24px auto; padding:12px; }
-    .card { background:#fff; padding:18px; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.06); margin-bottom:16px; }
-    #upload-area { border:2px dashed #d0eaf2; padding:18px; text-align:center; }
-    #report { white-space:pre-wrap; font-family:monospace; background:#f7f9fb; padding:12px; border-radius:8px; }
-    .grid { display:grid; grid-template-columns:1fr 380px; gap:18px; }
-    .btn { background:#00bcd4; color:#000; padding:10px 14px; border-radius:8px; border:none; cursor:pointer; font-weight:700; }
-    .muted { color:#666; font-size:0.95rem; }
-    progress { width:100%; }
+    :root{
+      --bg:#f6fbff; --card:#ffffff; --muted:#6b7280;
+      --accent:#00bcd4; --danger:#ff5964; --warn:#ffb86b; --ok:#38d39f;
+      --info:#3b82f6;
+    }
+    body{font-family:Inter,system-ui,Arial; background:var(--bg); margin:0;}
+    .topbar{background:#001f33;color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+    .center{max-width:1200px;margin:26px auto;padding:0 16px}
+    h1{margin:8px 0 16px}
+    .grid{display:grid;grid-template-columns:1fr 420px;gap:18px}
+    .card{background:var(--card);padding:18px;border-radius:12px;box-shadow:0 8px 30px rgba(8,15,30,0.06)}
+    .muted{color:var(--muted)}
+    .btn{background:var(--accent);border:none;padding:10px 14px;border-radius:8px;color:#000;font-weight:700;cursor:pointer}
+    input[type="number"]{width:120px;padding:8px;border-radius:8px;border:1px solid #e6eef5}
+    .fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:center}
+    .marker-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #eef5fb}
+    .marker-label{display:flex;flex-direction:column}
+    .badge{display:inline-block;padding:6px 8px;border-radius:999px;font-weight:700}
+    .severity-info{background:#e8f0ff;color:var(--info)}
+    .severity-normal{background:#f0fff7;color:var(--ok)}
+    .severity-mild{background:#fff7ed;color:var(--warn)}
+    .severity-moderate{background:#fff0f0;color:var(--danger)}
+    .severity-critical{background:#ffebee;color:var(--danger)}
+    #report {white-space:pre-wrap;font-family:monospace;background:#fbfdff;padding:12px;border-radius:8px;margin-top:10px}
+    #ocr-progress{width:100%}
+    .small{font-size:0.92rem}
+    .row{display:flex;gap:10px;align-items:center}
+    .save-actions{display:flex;gap:12px;margin-top:12px}
+    .linkish{color:var(--info);cursor:pointer;text-decoration:underline}
   </style>
 </head>
 <body>
-  <div class="topbar" style="background:#002b47;color:#fff;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;">
+  <div class="topbar">
     <div id="welcome">Loading...</div>
-    <div>
+    <div style="display:flex;gap:12px;align-items:center">
       <button id="logout-btn" class="btn">Logout</button>
     </div>
   </div>
 
   <div class="center">
-    <h1>AMI — AI Lab Tools</h1>
+    <h1>AMI Health — Professional Lab Editor</h1>
 
     <div class="grid">
+      <!-- LEFT: Upload + Editor -->
       <div>
         <div class="card">
-          <h3>Upload CBC / Blood Test (image or PDF)</h3>
-          <div id="upload-area">
+          <h3>1) Upload CBC / Blood Test (image or PDF)</h3>
+          <div class="muted">We run OCR in your browser, then you review and correct extracted values before saving.</div>
+
+          <div style="margin-top:12px;">
             <input id="file-input" type="file" accept="image/*,application/pdf" />
-            <p class="muted">Supported: JPG/PNG/PDF. Reports are processed in your browser.</p>
-            <div style="margin-top:10px;">
-              <button id="process-btn" class="btn">Process file</button>
+            <div style="margin-top:8px;">
+              <button id="process-btn" class="btn">Run OCR & Parse</button>
+              <button id="clear-btn" style="margin-left:8px" class="btn" onclick="location.reload()">Reset</button>
             </div>
-            <div style="margin-top:12px;"><progress id="ocr-progress" value="0" max="100" style="display:none;"></progress></div>
-            <div id="status" class="muted" style="margin-top:8px;"></div>
+            <div style="margin-top:12px">
+              <progress id="ocr-progress" value="0" max="100" style="display:none;"></progress>
+            </div>
+            <div id="status" class="muted small" style="margin-top:8px"></div>
           </div>
         </div>
 
-        <div class="card">
-          <h3>AI Report (Preview)</h3>
-          <div id="report">No report yet. Upload a lab image or PDF and click Process.</div>
-          <div style="margin-top:12px;">
-            <button id="save-btn" class="btn" disabled>Save report to my account</button>
-            <span id="save-msg" class="muted" style="margin-left:12px;"></span>
+        <div class="card" style="margin-top:14px;">
+          <h3>2) Edit extracted markers (clinician review)</h3>
+          <div class="muted small">Click any value to edit. When you change a value the flags will re-run automatically.</div>
+
+          <div id="markers-container" style="margin-top:12px"></div>
+
+          <div style="margin-top:12px" class="save-actions">
+            <button id="save-btn" class="btn" disabled>Save final report</button>
+            <button id="upload-file-btn" class="btn" disabled">Upload file to Storage</button>
+            <div id="save-msg" class="muted small"></div>
           </div>
+
+          <div id="report" style="margin-top:12px">No report generated yet.</div>
         </div>
       </div>
 
+      <!-- RIGHT: Summary & Raw OCR -->
       <div>
         <div class="card">
-          <h3>Parsed Markers</h3>
-          <div id="parsed-json" style="font-family:monospace; white-space:pre-wrap;">{ }</div>
+          <h3>Summary & Flags</h3>
+          <div id="summary" class="muted small">No flags yet.</div>
+          <div id="flags" style="margin-top:12px"></div>
         </div>
 
-        <div class="card">
-          <h3>Notes & Actions</h3>
-          <div id="notes" class="muted">After saving, reports will appear in your Supabase `reports` table. Use this area to add clinical notes later.</div>
+        <div class="card" style="margin-top:14px;">
+          <h3>OCR Raw Text (editable)</h3>
+          <textarea id="raw-text" style="width:100%;height:220px;border-radius:8px;border:1px solid #eef5fb;padding:10px;font-family:monospace"></textarea>
+        </div>
+
+        <div class="card" style="margin-top:14px;">
+          <h3>Saved Reports</h3>
+          <div id="saved-list" class="muted small">Click "Load saved reports" to list your saved items.</div>
+          <div style="margin-top:8px"><button id="load-saved" class="btn">Load saved reports</button></div>
+          <div id="saved-results" style="margin-top:10px"></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Tesseract (browser OCR) -->
+  <!-- Tesseract -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.5/dist/tesseract.min.js"></script>
 
   <script type="module">
     import { supabase } from "./lib/supabaseClient.js";
 
-    // --- helper: simple OCR for PDFs and images
-    async function fileToImageData(file) {
-      // If PDF, convert first page to image (simple approach using blob URL; for multi-page PDFs a more advanced lib is required)
-      if (file.type === "application/pdf") {
-        // for PDF in browser we render using <embed> then draw to canvas — but to keep this lightweight, try Tesseract on pdf blob directly
-        // Tesseract can accept PDF in many cases; fallback to file blob URL
-      }
-      return URL.createObjectURL(file);
+    // ---------- Utilities ----------
+    function toNum(v){ if (v===null||v===undefined) return null; const n = parseFloat(String(v).replace(',','.')); return Number.isFinite(n) ? n : null; }
+    function badgeForSeverity(s){
+      if(!s) return '<span class="badge severity-info">INFO</span>';
+      if(s==='normal') return '<span class="badge severity-normal">NORMAL</span>';
+      if(s==='mild') return '<span class="badge severity-mild">MILD</span>';
+      if(s==='moderate') return '<span class="badge severity-moderate">MODERATE</span>';
+      if(s==='critical') return '<span class="badge severity-critical">CRITICAL</span>';
+      return '<span class="badge severity-info">'+String(s)+'</span>';
     }
 
-    // --- parsing rules (simple regexes)
-    function parseMarkers(text) {
-      const tx = text.replace(/\r/g, '\n');
-      const get = (re) => {
-        const m = tx.match(re);
-        return m ? parseFloat(m[1].replace(',', '.')) : null;
+    // ---------- Parsing rules ----------
+    function parseMarkersFromText(text){
+      const tx = (text||'').replace(/\r/g,'\n');
+      const find = (reList)=>{
+        for(const re of reList){
+          const m = tx.match(re);
+          if(m && m[1]) return parseFloat(m[1].replace(',','.'));
+        }
+        return null;
       };
 
-      const parsed = {
-        hemoglobin: get(/hemoglobin[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i) || get(/hb[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i),
-        rbc: get(/(?:rbc|red blood cell)[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i),
-        hct: get(/hct[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i),
-        mcv: get(/mcv[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i),
-        mch: get(/mch[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i),
-        mchc: get(/mchc[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i),
-        wbc: get(/white cell count[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i) || get(/wbc[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i),
-        neutrophils_pct: get(/neu%[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i) || get(/neutrophil[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)\s*%/i),
-        lymphocytes_pct: get(/lym%[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i) || get(/lymphocyte[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)\s*%/i),
-        platelets: get(/pl(?:t|atelet)[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i) || get(/\bplt[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i),
-        esr: get(/esr[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i)
+      return {
+        hemoglobin: find([/hemoglobin[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i,/^hb[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/im,/^hgb[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/im]),
+        rbc: find([/rbc[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i]),
+        hct: find([/hct[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i]),
+        mcv: find([/mcv[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i]),
+        mch: find([/mch[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i]),
+        mchc: find([/mchc[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i]),
+        wbc: find([/white cell count[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i,/^wbc[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/im]),
+        neutrophils_pct: find([/neutrophil[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)\s*%/i,/^neu%[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/im]),
+        lymphocytes_pct: find([/lymphocyte[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)\s*%/i,/^lym%[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/im]),
+        platelets: find([/platelet[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i,/^plt[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/im]),
+        esr: find([/esr[^\d\-]*?([0-9]+(?:[.,][0-9]+)?)/i])
       };
-
-      return parsed;
     }
 
-    // --- simple clinical rules (conservative) — for clinician review only
-    function interpret(parsed) {
-      const flags = [];
-      const recs = [];
+    // ---------- Clinical rules ----------
+    function interpretAll(parsed){
+      const flags=[];
+      const recs=[];
+      const p = parsed;
 
-      const Hb = parsed.hemoglobin;
-      if (Hb !== null) {
-        if (Hb < 8) { flags.push({ marker:'Hemoglobin', severity:'critical', note:'Severe anemia — urgent review' }); }
-        else if (Hb < 11) { flags.push({ marker:'Hemoglobin', severity:'mild', note:'Low Hb — consider iron studies if symptomatic' }); }
+      // Hemoglobin (adult general ranges; clinical context still required)
+      if(p.hemoglobin != null){
+        if(p.hemoglobin < 7.0) flags.push({marker:'Hemoglobin', severity:'critical', note:'Severe anemia — urgent review'});
+        else if(p.hemoglobin < 11.0) flags.push({marker:'Hemoglobin', severity:'mild', note:'Low Hb — consider iron studies'});
+        else flags.push({marker:'Hemoglobin', severity:'normal', note:'Within expected range'});
+      } else {
+        flags.push({marker:'Hemoglobin', severity:'info', note:'Hemoglobin not provided'});
       }
 
-      const WBC = parsed.wbc;
-      if (WBC !== null) {
-        if (WBC < 3.5) flags.push({ marker:'WBC', severity:'moderate', note:'Leukopenia — correlate clinically' });
-        if (WBC > 11) flags.push({ marker:'WBC', severity:'moderate', note:'Leukocytosis — possible infection or inflammation' });
+      // WBC
+      if(p.wbc != null){
+        if(p.wbc < 3.5) flags.push({marker:'WBC', severity:'moderate', note:'Leukopenia — correlate clinically'});
+        else if(p.wbc > 11) flags.push({marker:'WBC', severity:'moderate', note:'Leukocytosis — possible infection'});
+        else flags.push({marker:'WBC', severity:'normal', note:'Within expected range'});
       }
 
-      const PLT = parsed.platelets;
-      if (PLT !== null) {
-        if (PLT < 50) flags.push({ marker:'Platelets', severity:'critical', note:'Severe thrombocytopenia — urgent review' });
-        else if (PLT < 150) flags.push({ marker:'Platelets', severity:'mild', note:'Low platelets — monitor and correlate' });
-        else if (PLT > 450) flags.push({ marker:'Platelets', severity:'moderate', note:'Thrombocytosis — consider further workup' });
+      // Platelets
+      if(p.platelets != null){
+        if(p.platelets < 50) flags.push({marker:'Platelets', severity:'critical', note:'Severe thrombocytopenia — urgent'});
+        else if(p.platelets < 150) flags.push({marker:'Platelets', severity:'mild', note:'Low platelets — monitor'});
+        else if(p.platelets > 450) flags.push({marker:'Platelets', severity:'moderate', note:'High platelets — consider workup'});
+        else flags.push({marker:'Platelets', severity:'normal', note:'Within expected range'});
       }
 
-      // Basophils, neutrophils etc are informational
-      if (flags.length === 0) recs.push('No immediate critical flags identified; interpret in clinical context.');
+      // quick summary
+      if(!flags.length) recs.push('No immediate abnormal flags detected.');
+      else recs.push('Review flagged markers above; interpret in clinical context.');
 
       return { flags, recs };
     }
 
-    // --- UI wiring
+    // ---------- UI wiring ----------
     const fileInput = document.getElementById('file-input');
     const processBtn = document.getElementById('process-btn');
+    const clearBtn = document.getElementById('clear-btn');
     const statusEl = document.getElementById('status');
     const progressBar = document.getElementById('ocr-progress');
+    const rawTextEl = document.getElementById('raw-text');
+    const markersContainer = document.getElementById('markers-container');
     const reportEl = document.getElementById('report');
-    const parsedJsonEl = document.getElementById('parsed-json');
+    const flagsEl = document.getElementById('flags');
+    const summaryEl = document.getElementById('summary');
     const saveBtn = document.getElementById('save-btn');
+    const uploadFileBtn = document.getElementById('upload-file-btn');
     const saveMsg = document.getElementById('save-msg');
+    const loadSavedBtn = document.getElementById('load-saved');
+    const savedResults = document.getElementById('saved-results');
 
-    let lastOCRText = null;
-    let lastParsed = null;
-    let lastSummary = null;
+    let lastOCRText = '';
+    let parsedVals = null;
+    let currentUser = null;
     let lastFile = null;
     let lastStoragePath = null;
 
-    processBtn.addEventListener('click', async () => {
-      saveMsg.innerText = '';
-      if (!fileInput.files || fileInput.files.length === 0) {
-        alert('Please choose a file first');
-        return;
-      }
-      const file = fileInput.files[0];
-      lastFile = file;
-      statusEl.innerText = 'Preparing file...';
-      progressBar.style.display = 'none';
-      // Convert to object URL for Tesseract
-      const blobUrl = URL.createObjectURL(file);
+    // protect page + welcome
+    (async function protect(){
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user) return window.location.href='login.html';
+      currentUser = user;
+      document.getElementById('welcome').innerText = 'Welcome — ' + user.email;
+    })();
 
-      statusEl.innerText = 'Running OCR (this can take 10–30s depending on file size)...';
-      progressBar.style.display = 'block';
-      progressBar.value = 0;
+    // Process OCR + parse
+    processBtn.addEventListener('click', async ()=>{
+      saveMsg.innerText=''; saveBtn.disabled=true; uploadFileBtn.disabled=true;
+      if(!fileInput.files || fileInput.files.length===0){ alert('Please pick a file'); return; }
+      const f = fileInput.files[0];
+      lastFile = f;
+      statusEl.innerText = 'Initializing OCR...';
+      progressBar.style.display='block'; progressBar.value=0;
 
-      // Tesseract.js recognizes PDF and images; use worker to get progress
       const worker = Tesseract.createWorker({
         logger: m => {
-          if (m.status === 'recognizing text' || m.status === 'recognizing') {
-            const p = Math.min(100, Math.round((m.progress||0)*100));
-            progressBar.value = p;
+          if(m.status && (m.status.includes('recogniz')||m.status.includes('loading')||m.status.includes('progress'))){
+            progressBar.value = Math.min(100, Math.round((m.progress||0)*100));
           }
-          // show status messages small
-          statusEl.innerText = m.status + (m.progress ? ' ' + Math.round(m.progress*100) + '%' : '');
+          statusEl.innerText = `${m.status || ''} ${m.progress ? Math.round(m.progress*100)+'%' : ''}`;
         }
       });
 
-      try {
+      try{
         await worker.load();
         await worker.loadLanguage('eng');
         await worker.initialize('eng');
 
-        // For PDFs, tesseract can accept blob URL; here we pass the file blob directly
-        const { data: { text } } = await worker.recognize(file);
+        const { data: { text } } = await worker.recognize(f);
         lastOCRText = text;
+        rawTextEl.value = text.slice(0,10000); // show up to 10k chars
         await worker.terminate();
 
-        statusEl.innerText = 'Parsing values...';
-        const parsed = parseMarkers(text);
-        lastParsed = parsed;
-
-        const interp = interpret(parsed);
-        lastSummary = {
-          flags: interp.flags,
-          recs: interp.recs,
-          quick: `Hemoglobin: ${parsed.hemoglobin||'N/A'} | WBC: ${parsed.wbc||'N/A'} | Platelets: ${parsed.platelets||'N/A'}`
-        };
-
-        // Update UI
-        parsedJsonEl.innerText = JSON.stringify(parsed, null, 2);
-        reportEl.innerText = `--- AMI Health — CBC AI Preview ---\n\nQuick: ${lastSummary.quick}\n\nFlags:\n${interp.flags.length? JSON.stringify(interp.flags,null,2):'None'}\n\nRecommendations:\n${interp.recs.join('\\n')}\n\n--- OCR RAW TEXT (first 800 chars) ---\n${text.slice(0,800)}\n\n(Report for clinician review only — not a diagnosis.)`;
-
-        statusEl.innerText = 'OCR done. You can save this report to your account.';
+        // parse
+        parsedVals = parseMarkersFromText(lastOCRText);
+        renderParsedEditor(parsedVals);
+        const interp = interpretAll(parsedVals);
+        renderFlags(interp);
+        reportEl.innerText = buildReportText(parsedVals, interp);
         saveBtn.disabled = false;
-      } catch (err) {
+        uploadFileBtn.disabled = false;
+        statusEl.innerText = 'OCR complete. Review values and save.';
+      }catch(err){
         console.error(err);
         statusEl.innerText = 'OCR failed: ' + (err.message||err);
         await worker.terminate();
-      } finally {
-        progressBar.style.display = 'none';
+      }finally{
+        progressBar.style.display='none';
       }
     });
 
-    // --- Save to Supabase: upload file + insert report row
-    saveBtn.addEventListener('click', async () => {
-      saveMsg.innerText = '';
-      saveBtn.disabled = true;
-      try {
-        // ensure logged in
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          alert('Please sign in again');
-          window.location.href = 'login.html';
-          return;
-        }
+    // Build professional editor UI
+    function renderParsedEditor(values){
+      markersContainer.innerHTML='';
+      const rows = [
+        {key:'hemoglobin', label:'Hemoglobin (g/dL)'},
+        {key:'rbc', label:'RBC (10^6/uL)'},
+        {key:'hct', label:'HCT (%)'},
+        {key:'mcv', label:'MCV (fL)'},
+        {key:'mch', label:'MCH (pg)'},
+        {key:'mchc', label:'MCHC (g/dL)'},
+        {key:'wbc', label:'WBC (10^3/uL)'},
+        {key:'neutrophils_pct', label:'Neutrophils (%)'},
+        {key:'lymphocytes_pct', label:'Lymphocytes (%)'},
+        {key:'platelets', label:'Platelets (10^3/uL)'},
+        {key:'esr', label:'ESR (mm/hr)'}
+      ];
 
-        let storagePath = null;
-        if (lastFile) {
-          const filename = `${Date.now()}_${lastFile.name.replace(/\s+/g,'_')}`;
-          const bucket = 'reports';
-          // upload
-          const { data: uploadData, error: upErr } = await supabase.storage.from(bucket).upload(`${user.id}/${filename}`, lastFile);
-          if (upErr) {
-            console.warn('Upload error', upErr);
-            // continue — we can still save the report without storage
-          } else {
-            storagePath = uploadData.path;
-            lastStoragePath = storagePath;
-          }
-        }
+      for(const r of rows){
+        const val = values && values[r.key] != null ? values[r.key] : '';
+        const row = document.createElement('div');
+        row.className='marker-row';
+        row.innerHTML = `
+          <div class="marker-label">
+            <div style="font-weight:700">${r.label}</div>
+            <div class="muted small">Key: ${r.key}</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <input type="number" step="0.1" id="fld-${r.key}" value="${val}" placeholder="-" />
+            <div id="sev-${r.key}"></div>
+          </div>
+        `;
+        markersContainer.appendChild(row);
 
-        // insert row
-        const insertPayload = {
-          user_id: (await supabase.auth.getUser()).data.user.id,
+        // attach change listener
+        const inp = row.querySelector(`#fld-${r.key}`);
+        inp.addEventListener('input', ()=>{
+          parsedVals[r.key] = toNum(inp.value);
+          const interp = interpretAll(parsedVals);
+          renderFlags(interp);
+          reportEl.innerText = buildReportText(parsedVals, interp);
+        });
+      }
+    }
+
+    // Render flags & summary
+    function renderFlags(interp){
+      flagsEl.innerHTML='';
+      summaryEl.innerText = interp.recs && interp.recs.length ? interp.recs.join(' | ') : 'No recommendations';
+      for(const f of interp.flags){
+        const div = document.createElement('div');
+        div.style.marginTop='8px';
+        div.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>${f.marker}</strong> — <span class="muted small">${f.note}</span></div>
+          <div>${badgeForSeverity(f.severity)}</div>
+        </div>`;
+        flagsEl.appendChild(div);
+      }
+      // Also update per-field severity badges
+      const severityMap = {};
+      interp.flags.forEach(f=>severityMap[f.marker.toLowerCase()] = f.severity);
+      // map marker keys to labels
+      const mapKeyToLabel = {
+        hemoglobin:'hemoglobin', wbc:'wbc', platelets:'platelets'
+      };
+      // update badges for visible fields
+      const allKeys = Object.keys(parsedVals || {});
+      allKeys.forEach(k=>{
+        const sev = (function(){
+          if(k==='hemoglobin') return (interp.flags.find(x=>x.marker==='Hemoglobin')||{}).severity;
+          if(k==='wbc') return (interp.flags.find(x=>x.marker==='WBC')||{}).severity;
+          if(k==='platelets') return (interp.flags.find(x=>x.marker==='Platelets')||{}).severity;
+          return null;
+        })();
+        const sevEl = document.getElementById('sev-'+k);
+        if(sevEl) sevEl.innerHTML = badgeForSeverity(sev || 'info');
+      });
+    }
+
+    function buildReportText(parsed, interp){
+      return [
+        '--- AMI Health — Final Report Preview ---',
+        `Quick: Hemoglobin ${parsed.hemoglobin||'N/A'} | WBC ${parsed.wbc||'N/A'} | Platelets ${parsed.platelets||'N/A'}`,
+        '',
+        'Flags:',
+        interp.flags.length ? JSON.stringify(interp.flags, null, 2) : 'None',
+        '',
+        'Recommendations:',
+        interp.recs.join('\\n'),
+        '',
+        '--- OCR RAW (first 1000 chars) ---',
+        (lastOCRText||'').slice(0,1000),
+        ''
+      ].join('\\n');
+    }
+
+    // Upload file to storage (optional)
+    uploadFileBtn.addEventListener('click', async ()=>{
+      if(!lastFile){ alert('No file to upload'); return; }
+      uploadFileBtn.disabled = true; saveMsg.innerText='Uploading file...';
+      try{
+        const filename = `${Date.now()}_${lastFile.name.replace(/\s+/g,'_')}`;
+        const bucket = 'reports';
+        const { data:up, error:upErr } = await supabase.storage.from(bucket).upload(`${currentUser.id}/${filename}`, lastFile);
+        if(upErr) throw upErr;
+        lastStoragePath = up.path;
+        saveMsg.innerText = 'Upload done';
+      }catch(err){
+        console.error(err); saveMsg.innerText = 'Upload failed: ' + (err.message||err);
+      }finally{ uploadFileBtn.disabled=false; }
+    });
+
+    // Save final report
+    saveBtn.addEventListener('click', async ()=>{
+      saveBtn.disabled=true; saveMsg.innerText='Saving...';
+      try{
+        const payload = {
+          user_id: currentUser.id,
           filename: lastFile ? lastFile.name : null,
-          storage_path: storagePath,
-          raw_text: lastOCRText,
-          parsed: lastParsed,
-          summary: JSON.stringify(lastSummary)
+          storage_path: lastStoragePath || null,
+          raw_text: rawTextEl.value || lastOCRText || null,
+          parsed: parsedVals,
+          summary: JSON.stringify({ quick:`Hb:${parsedVals.hemoglobin||'N/A'}`, flags: interpretAll(parsedVals).flags })
         };
-
-        const { data, error } = await supabase.from('reports').insert([insertPayload]);
-        if (error) throw error;
-
+        const { data, error } = await supabase.from('reports').insert([payload]);
+        if(error) throw error;
         saveMsg.innerText = 'Saved ✓';
-      } catch (err) {
-        console.error(err);
-        saveMsg.innerText = 'Save failed: ' + (err.message || err);
-      } finally {
-        saveBtn.disabled = false;
+        // show saved id/links
+        loadSavedReports();
+      }catch(err){
+        console.error(err); saveMsg.innerText = 'Save failed: ' + (err.message||err);
+      }finally{ saveBtn.disabled=false; }
+    });
+
+    // Load saved reports list
+    async function loadSavedReports(){
+      savedResults.innerHTML = 'Loading...';
+      try{
+        const { data, error } = await supabase.from('reports').select('*').eq('user_id', currentUser.id).order('created_at',{ascending:false}).limit(20);
+        if(error) throw error;
+        if(!data || data.length===0){ savedResults.innerText = 'No saved reports yet.'; return; }
+        savedResults.innerHTML = '';
+        data.forEach(r=>{
+          const el = document.createElement('div');
+          el.style.padding='8px 0';
+          el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong>${r.filename||'(no file)'}</strong><div class="muted small">${new Date(r.created_at).toLocaleString()}</div></div>
+            <div style="display:flex;gap:8px">
+              <div class="linkish" onclick='loadReport("${r.id}")'>Load</div>
+            </div>
+          </div>`;
+          savedResults.appendChild(el);
+        });
+      }catch(err){
+        console.error(err); savedResults.innerText = 'Failed to load: ' + (err.message||err);
       }
-    });
+    }
 
-    // --- Logout + welcome
-    document.getElementById('logout-btn').addEventListener('click', async () => {
-      await supabase.auth.signOut();
-      window.location.href = 'login.html';
-    });
+    // load a report by id
+    window.loadReport = async function(id){
+      try{
+        const { data, error } = await supabase.from('reports').select('*').eq('id', id).single();
+        if(error) throw error;
+        // populate
+        lastOCRText = data.raw_text || '';
+        rawTextEl.value = lastOCRText;
+        parsedVals = data.parsed || {};
+        renderParsedEditor(parsedVals);
+        const interp = interpretAll(parsedVals);
+        renderFlags(interp);
+        reportEl.innerText = buildReportText(parsedVals, interp);
+      }catch(err){
+        console.error(err); alert('Failed to load report: '+ (err.message||err));
+      }
+    };
 
-    // Protect page: require login
-    (async function protect() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return window.location.href = 'login.html';
-      document.getElementById('welcome').innerText = 'Welcome, ' + user.email;
-    })();
+    // click handler for load saved
+    loadSavedBtn.addEventListener('click', ()=> loadSavedReports());
+
   </script>
 </body>
 </html>
