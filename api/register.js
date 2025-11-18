@@ -1,4 +1,4 @@
-import { pool } from "./db.js";
+import { sql } from "./db.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -9,21 +9,23 @@ export default async function handler(req, res) {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
+      return res.status(400).json({ error: "Email and password required" });
     }
 
-    const result = await pool.query(
-      "INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id, email",
-      [email, password]
-    );
+    // Insert new user
+    const result = await sql`
+      INSERT INTO users (email, password)
+      VALUES (${email}, ${password})
+      RETURNING id, email, created_at;
+    `;
 
     return res.status(200).json({
-      message: "User registered",
-      user: result.rows[0]
+      message: "User registered successfully",
+      user: result[0],
     });
 
   } catch (err) {
-    console.error("Register error:", err);
-    return res.status(500).json({ error: "Server error", details: err.message });
+    console.error("register error", err);
+    return res.status(500).json({ error: err.message });
   }
 }
