@@ -1,10 +1,9 @@
 {
-  "name": "ami-backend",
+  "name": "amihealth-website",
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "@supabase/supabase-js": "^2.0.0",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.0"
+    "@supabase/supabase-js": "^2.39.1",
+    "bcryptjs": "^2.4.3"
   }
 }
