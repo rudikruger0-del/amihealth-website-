@@ -1,17 +1,12 @@
 {
   "version": 3,
   "framework": null,
-  "outputDirectory": ".",
   "functions": {
-    "api/*.js": {
+    "api/login.js": {
       "runtime": "nodejs18.x"
     }
   },
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1.js" },
-    { "src": "/(.*)", "dest": "/$1" }
-  ],
-  "builds": [
-    { "src": "api/*.js", "use": "@vercel/node" }
+    { "src": "/api/login", "dest": "api/login.js" }
   ]
 }
