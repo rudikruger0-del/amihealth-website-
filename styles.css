@@ -1,63 +1,76 @@
-
+/* ====== GLOBAL ====== */
 body {
-  font-family: 'Inter', sans-serif;
   margin: 0;
-  background: #ffffff;
-  color: #0A1F44;
+  padding: 0;
+  background: #f5f7fa;
+  font-family: Arial, sans-serif;
 }
 
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 24px;
-}
-
-.site-header {
-  border-bottom: 1px solid #E3EEF9;
-}
-
-.header-inner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.logo {
-  height: 48px;
-}
-
-.tagline {
-  font-weight: 600;
-  color: #1A4B84;
-  margin-left: 12px;
-}
-
-.main-nav a {
-  margin-left: 20px;
-  color: #0A1F44;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.hero {
-  background: linear-gradient(180deg, #ffffff, #E3EEF9);
-  padding: 60px 0;
-}
-
-.hero h2 {
-  font-size: 32px;
-  margin-bottom: 10px;
-}
-
-.lead {
-  font-size: 18px;
-  color: #6B7280;
-  max-width: 600px;
-}
-
-.site-footer {
+/* ====== CENTERED CONTAINERS ====== */
+.center-box {
+  max-width: 420px;
+  margin: 80px auto;
+  padding: 30px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 28px rgba(0,0,0,0.12);
   text-align: center;
-  padding: 20px;
-  background: #F7FAFC;
-  margin-top: 40px;
+}
+
+/* ====== INPUTS ====== */
+input, button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 12px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+button {
+  background: #1a73e8;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background: #0b59c7;
+}
+
+/* ====== DASHBOARD ====== */
+.dashboard-container {
+  max-width: 900px;
+  margin: 50px auto;
+  padding: 30px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+}
+
+.card {
+  padding: 22px;
+  background: #f8faff;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.08);
+  cursor: pointer;
+}
+
+.card:hover {
+  background: #eef3ff;
+}
+
+.upload-preview {
+  margin-top: 20px;
+  width: 100%;
+  border-radius: 10px;
+}
+
+/* Doctor Signature */
+.signature-box {
+  padding: 12px;
+  background: #eef3ff;
+  border-radius: 10px;
+  font-style: italic;
 }
