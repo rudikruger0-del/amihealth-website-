@@ -1,19 +1,19 @@
 {
   "version": 3,
   "framework": null,
+  "outputDirectory": ".",
+  "cleanUrls": true,
+  "trailingSlash": false,
+
   "functions": {
     "api/*.js": {
       "runtime": "nodejs18.x"
     }
   },
+
   "routes": [
-    {
-      "src": "^/api/(.*)$",
-      "dest": "/api/$1.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
+    { "src": "^/api/(.*)$", "dest": "/api/$1.js" },
+    { "src": "^/(.*)$", "dest": "/$1.html" },
+    { "src": "^/$", "dest": "/index.html" }
   ]
 }
