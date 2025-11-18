@@ -1,24 +1,39 @@
 import { supabase } from "../../lib/supabaseClient.js";
 import bcrypt from "bcryptjs";
 
+// --- Function to read raw request body (Vercel fix) ---
+async function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let data = "";
+
+    req.on("data", chunk => {
+      data += chunk;
+    });
+
+    req.on("end", () => {
+      try {
+        resolve(JSON.parse(data));
+      } catch (err) {
+        reject("Invalid JSON");
+      }
+    });
+
+    req.on("error", err => reject(err));
+  });
+}
+
 export default async function handler(req, res) {
   try {
-    // Only allow POST
     if (req.method !== "POST") {
       return res.status(405).json({ error: "Method not allowed" });
     }
 
-    // --- Fix: Manually read raw request body (Vercel requirement) ---
-    const buffers = [];
-    for await (const chunk of req) {
-      buffers.push(chunk);
-    }
-
+    // --- FIX: fully manual JSON body ---
     let body;
     try {
-      body = JSON.parse(Buffer.concat(buffers).toString());
-    } catch (e) {
-      return res.status(400).json({ error: "Invalid JSON" });
+      body = await readBody(req);
+    } catch (err) {
+      return res.status(400).json({ error: "Invalid JSON body" });
     }
 
     const { email, password } = body;
@@ -38,7 +53,7 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    // --- Fix: compare with password_hash column ---
+    // --- Compare password with hashed password in DB ---
     const valid = bcrypt.compareSync(password, user.password_hash);
 
     if (!valid) {
@@ -48,7 +63,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       message: "Login successful",
-      email: user.email,
+      email: user.email
     });
 
   } catch (err) {
