@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>AMI Dashboard</title>
+  <style>
+    body {
+      background: #0b1024;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 40px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+
+  <script type="module">
+    import { supabase } from "./lib/supabaseClient.js";
+
+    async function checkUser() {
+      const { data } = await supabase.auth.getUser();
+
+      if (!data.user) {
+        window.location.href = "/login.html";
+      } else {
+        document.getElementById("email").textContent =
+          data.user.email;
+      }
+    }
+
+    async function logout() {
+      await supabase.auth.signOut();
+      window.location.href = "/login.html";
+    }
+
+    window.logout = logout;
+
+    checkUser();
+  </script>
+</head>
+
+<body>
+  <h1>Welcome to AMI Dashboard</h1>
+  <p>Logged in as: <span id="email">Loading...</span></p>
+  <button onclick="logout()">Log Out</button>
+</body>
+</html>
