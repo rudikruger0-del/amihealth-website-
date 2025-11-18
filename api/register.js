@@ -1,13 +1,19 @@
 import { pool } from './db.js';
 import bcrypt from 'bcrypt';
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};
 
+export default async function handler(req, res) {
   try {
-    const { email, password } = req.body;
+    if (req.method !== "POST") {
+      return res.status(405).json({ error: "Method not allowed" });
+    }
+
+    const { email, password } = req.body || {};
 
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password required" });
@@ -15,13 +21,12 @@ export default async function handler(req, res) {
 
     const hashed = await bcrypt.hash(password, 10);
 
-    const query = `
-INSERT INTO ami_users (email, password_hash)
-VALUES ($1, $2)
-RETURNING id, email;
-`;
-
-    const result = await pool.query(query, [email, hashed]);
+    const result = await pool.query(
+      `INSERT INTO ami_users (email, password_hash)
+       VALUES ($1, $2)
+       RETURNING id, email`,
+      [email, hashed]
+    );
 
     return res.status(200).json({
       message: "User registered",
@@ -29,7 +34,10 @@ RETURNING id, email;
     });
 
   } catch (err) {
-    console.error("register error", err);
-    return res.status(500).json({ error: "Server error", details: err.message });
+    console.error("REGISTER ERROR:", err);
+    return res.status(500).json({
+      error: "Server error",
+      details: err.message
+    });
   }
 }
