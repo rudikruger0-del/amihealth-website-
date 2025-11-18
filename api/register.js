@@ -2,20 +2,19 @@ import { pool } from "./db.js";
 
 export default async function handler(req, res) {
   try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ error: "Method not allowed" });
-    }
-
-    // ---- Read JSON body properly (Vercel doesn't parse automatically) ----
-    const chunks = [];
+    // Read raw body for Vercel
+    const buffers = [];
     for await (const chunk of req) {
-      chunks.push(chunk);
+      buffers.push(chunk);
     }
+    const data = Buffer.concat(buffers).toString();
     let body = {};
     try {
-      body = JSON.parse(Buffer.concat(chunks).toString());
-    } catch {
-      return res.status(400).json({ error: "Invalid JSON" });
+      body = JSON.parse(data);
+    } catch {}
+
+    if (req.method !== "POST") {
+      return res.status(405).json({ error: "Method not allowed" });
     }
 
     const { email, password } = body;
@@ -24,13 +23,16 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "email & password required" });
     }
 
-    // ---- Insert into DB ----
-    const result = await pool.query(
-      `INSERT INTO users (email, password)
-       VALUES ($1, $2)
-       RETURNING id, email;`,
-      [email, password]
-    );
+    // 🔥 IMPORTANT: clean query (NO SPACES BEFORE INSERT)
+    const query = `
+INSERT INTO users (email, password)
+VALUES ($1, $2)
+RETURNING id, email;
+    `.trim();
+
+    const values = [email, password];
+
+    const result = await pool.query(query, values);
 
     return res.status(200).json({
       message: "User created",
@@ -38,7 +40,7 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    console.error("REGISTER ERROR:", err);
+    console.error("register error", err);
     return res.status(500).json({ error: "Server error" });
   }
 }
