@@ -18,9 +18,13 @@
   </style>
 </head>
 <body>
+
   <div class="card">
     <h1>Upload Scan / Lab Report</h1>
-    <p class="small">Select image(s) or PDF. Files will be uploaded to Supabase Storage (bucket: <code>reports</code>) and a report record will be queued for AI analysis.</p>
+    <p class="small">
+      Select image(s) or PDF. Files will be uploaded securely to Supabase Storage.
+      AMI will automatically read, analyse, and send results to your dashboard.
+    </p>
 
     <div>
       <input id="files" type="file" accept="image/*,application/pdf" multiple />
@@ -28,7 +32,7 @@
 
     <div class="row" style="margin-top:10px">
       <input id="title" type="text" placeholder="Report title (optional)" />
-      <button id="uploadBtn">Upload & Queue</button>
+      <button id="uploadBtn">Upload & Analyse</button>
     </div>
 
     <div id="status"></div>
@@ -36,10 +40,12 @@
   </div>
 
   <script type="module">
-    // ---------- CONFIG ----------
+
+    // ------------------------------------------
+    // CONFIG (already public keys, safe to expose)
+    // ------------------------------------------
     const SUPA_URL = "https://tbyttsfztuudyqbrkonm.supabase.co";
     const SUPA_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieXR0c2Z6dHV1ZHlxYnJrb25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MzA1MzgsImV4cCI6MjA3OTAwNjUzOH0.7T0S4_kkoWosdbmjlwtfSYzBcyipcPg1Fm8kIMa43uo";
-    // ----------------------------
 
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
     const supabase = createClient(SUPA_URL, SUPA_ANON);
@@ -49,40 +55,48 @@
     const statusEl = document.getElementById("status");
     const uploadedList = document.getElementById("uploadedList");
 
-    // simple auth check (you set localStorage on login)
+    // ------------------------------------------
+    // CHECK LOGIN
+    // ------------------------------------------
     const userEmail = localStorage.getItem("user_email");
     if (!userEmail) {
       alert("Please login first.");
       window.location.href = "login.html";
     }
 
+    // ------------------------------------------
+    // UPLOAD LOGIC
+    // ------------------------------------------
     uploadBtn.addEventListener("click", async () => {
+
       const files = filesInput.files;
-      const title = document.getElementById("title").value.trim() || null;
+      const title = document.getElementById("title").value.trim() || "Untitled Report";
+      
       if (!files || files.length === 0) {
         statusEl.textContent = "Please select a file to upload.";
         return;
       }
 
       uploadBtn.disabled = true;
-      statusEl.textContent = "Uploading files... (this may take a moment)";
+      statusEl.textContent = "Uploading files...";
 
       try {
         const uploadedPaths = [];
 
-        // upload files one by one
         for (const f of files) {
           const cleanName = f.name.replace(/\s+/g, "_");
           const filename = `${Date.now()}_${cleanName}`;
+
           const { data, error } = await supabase.storage
             .from("reports")
             .upload(filename, f, { cacheControl: "3600", upsert: false });
 
           if (error) throw error;
+
           uploadedPaths.push(data.path);
         }
 
-        // show uploaded list
+        // Show uploaded file list
         uploadedList.innerHTML = "";
         uploadedPaths.forEach(p => {
           const li = document.createElement("li");
@@ -90,34 +104,37 @@
           uploadedList.appendChild(li);
         });
 
-        statusEl.textContent = "Creating report record (queued) on server...";
+        statusEl.textContent = "Saving report in database...";
 
-        // create DB record using REST endpoint (so we do not expose service role key)
-        // This calls our /api/create-report server function which uses service_role_key.
-        const createResp = await fetch("/api/create-report", {
+        // ---------------------------------------
+        // SEND TO BACKEND (correct format)
+        // ---------------------------------------
+        const response = await fetch("/api/create-report", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            title,
-            files: uploadedPaths,
-            owner_user_email: userEmail
+            email: userEmail,
+            title: title,
+            files: uploadedPaths
           })
         });
 
-        const createJson = await createResp.json();
-        if (!createResp.ok) {
-          throw new Error(createJson.error || JSON.stringify(createJson));
+        const json = await response.json();
+
+        if (!response.ok) {
+          throw new Error(json.error || "Server error");
         }
 
-        statusEl.textContent = `Uploaded & queued (report id: ${createJson.id}). Analysis will appear in Dashboard.`;
+        statusEl.textContent = `Report saved (ID: ${json.id}). Analysis will show in Dashboard.`;
 
       } catch (err) {
         console.error(err);
-        statusEl.textContent = "Error: " + (err.message || JSON.stringify(err));
-      } finally {
-        uploadBtn.disabled = false;
+        statusEl.textContent = "Error: " + err.message;
       }
+
+      uploadBtn.disabled = false;
     });
   </script>
+
 </body>
 </html>
