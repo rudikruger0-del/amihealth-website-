@@ -3,10 +3,10 @@
 import bcrypt from "bcryptjs";
 import { createClient } from "@supabase/supabase-js";
 
-// Use your real Vercel environment variables
+// IMPORTANT: Use your SERVICE ROLE key on server-side
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 export default async function handler(req, res) {
@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: "Invalid email or password" });
   }
 
-  // Compare password
+  // Compare password hash
   const valid = bcrypt.compareSync(password, user.password_hash);
 
   if (!valid) {
@@ -55,6 +55,6 @@ export default async function handler(req, res) {
   return res.status(200).json({
     success: true,
     message: "Login successful",
-    email: user.email
+    email: user.email,
   });
 }
