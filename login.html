@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AMI Login</title>
 
-  <!-- Correct CSS path -->
   <link rel="stylesheet" href="/styles.css">
 
   <style>
@@ -69,7 +68,6 @@
 
   <div class="container">
 
-    <!-- Correct logo path -->
     <img src="/logo.png" class="logo" alt="AMI Logo">
 
     <h2>Login</h2>
@@ -77,78 +75,55 @@
     <input id="email" type="email" placeholder="Email">
     <input id="password" type="password" placeholder="Password">
 
-    <button onclick="login()">Login</button>
+    <button id="loginBtn">Login</button>
 
     <div id="status"></div>
   </div>
 
 
+  <!-- FINAL FIXED SCRIPT -->
   <script>
-    async function login() {
+    document.getElementById("loginBtn").addEventListener("click", async function () {
+
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
       const status = document.getElementById("status");
 
-      status.innerText = "Logging in...";
+      if (!email || !password) {
+        status.textContent = "Email and password required.";
+        return;
+      }
+
+      status.textContent = "Logging in...";
 
       try {
-        const response = await fetch("/api/login", {
+        const resp = await fetch("/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password })
         });
 
-        const result = await response.json();
+        const json = await resp.json();
 
-        if (response.ok) {
-          status.innerText = "Success! Redirecting...";
-          setTimeout(() => {
-            window.location.href = "/dashboard.html";
-          }, 800);
-        } else {
-          status.innerText = result.error || "Login failed";
+        if (!resp.ok) {
+          status.textContent = json.error || "Login failed";
+          return;
         }
 
+        // SUCCESS — SAVE LOGIN
+        localStorage.setItem("user_email", email);
+
+        status.textContent = "Success! Redirecting...";
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 700);
+
       } catch (err) {
-        status.innerText = "Network error";
+        status.textContent = "Network error: " + err.message;
       }
-    }
+
+    });
   </script>
 
 </body>
 </html>
-<script>
-document.getElementById("loginForm").addEventListener("submit", async function (e) {
-  e.preventDefault();
-
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-
-  const status = document.getElementById("status");
-  status.textContent = "Logging in...";
-
-  try {
-    const resp = await fetch("/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
-    });
-
-    const json = await resp.json();
-
-    if (!resp.ok) {
-      status.textContent = json.error || "Login failed";
-      return;
-    }
-
-    // Save login session in browser
-    localStorage.setItem("user_email", email);
-
-    // Redirect to upload page
-    window.location.href = "upload.html";
-
-  } catch (err) {
-    status.textContent = "Error: " + err.message;
-  }
-});
-</script>
