@@ -1,122 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>AMI Health – Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
+  <meta charset="UTF-8">
+  <title>AMI Health – Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    .login-box {
-      background: white;
-      padding: 30px;
-      border-radius: 8px;
-      width: 320px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
+  <style>
+    body {
+      background: #f5f5f5;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
 
-    h2 {
-      margin-top: 0;
-      text-align: center;
-    }
+    .login-box {
+      background: white;
+      padding: 25px;
+      width: 350px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
 
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #007aff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
 
-    button:hover {
-      background: #005bb5;
-    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #007aff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
 
-    .error {
-      color: red;
-      margin-top: 10px;
-      text-align: center;
-      display: none;
-    }
-  </style>
+    button:hover {
+      background: #0068d6;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+      text-align: center;
+    }
+  </style>
 </head>
+
 <body>
-  <div class="login-box">
-    <h2>Login</h2>
+  <div class="login-box">
+    <h2>Login</h2>
 
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
 
-    <button onclick="login()">Login</button>
+    <div id="error" class="error"></div>
+  </div>
 
-    <div class="error" id="errorBox"></div>
-  </div>
+  <script>
+    async function login() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const errorBox = document.getElementById("error");
+      errorBox.textContent = "";
 
-  <script>
-    async function login() {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const errorBox = document.getElementById("errorBox");
-      errorBox.style.display = "none";
+      if (!email || !password) {
+        errorBox.textContent = "Please enter email and password.";
+        return;
+      }
 
-      if (!email || !password) {
-        errorBox.innerText = "Please enter email and password.";
-        errorBox.style.display = "block";
-        return;
-      }
+      try {
+        const response = await fetch("/api/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email, password })
+        });
 
-      try {
-        const response = await fetch(
-          "https://tbyttsfztuudyqbrkonm.supabase.co/functions/v1/login",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              email: email,
-              password: password
-            })
-          }
-        );
+        const data = await response.json();
 
-        const data = await response.json();
+        if (!response.ok) {
+          errorBox.textContent = data.error || "Login failed";
+          return;
+        }
 
-        if (!response.ok) {
-          errorBox.innerText = data.error || "Login failed.";
-          errorBox.style.display = "block";
-          return;
-        }
+        // Save login info
+        localStorage.setItem("user_email", email);
 
-        // Success → redirect
-ocalStorage.setItem("user_email", email);
-window.location.href = "dashboard.html";
+        // Redirect to dashboard
+        window.location.href = "dashboard.html";
 
-      } catch (err) {
-        errorBox.innerText = "Network error. Try again.";
-        errorBox.style.display = "block";
-      }
-    }
-  </script>
+      } catch (err) {
+        errorBox.textContent = "Server error. Try again.";
+      }
+    }
+  </script>
 
 </body>
 </html>
