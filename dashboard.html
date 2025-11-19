@@ -1,36 +1,83 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AMI — Dashboard</title>
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-    const SUPABASE_URL = "https://tbyttsfztuudyqbrkonm.supabase.co";
-    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieXR0c2Z6dHV1ZHlxYnJrb25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MzA1MzgsImV4cCI6MjA3OTAwNjUzOH0.7T0S4_kkoWosdbmjlwtfSYzBcyipcPg1Fm8kIMa43uo"; // replace with your anon key
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AMI Dashboard</title>
 
-    // Check session on load
-    window.addEventListener("load", async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        // Not logged in → go back to login
-        window.location.href = "/login.html";
-        return;
-      }
-      document.getElementById("welcome").textContent = `Welcome, ${user.email}`;
-    });
+    <!-- Protect dashboard: user must be logged in -->
+    <script type="module">
+        import { supabase } from "./lib/supabaseClient.js";
 
-    async function logout() {
-      await supabase.auth.signOut();
-      window.location.href = "/login.html";
-    }
-    window.amiLogout = logout;
-  </script>
+        async function checkLogin() {
+            // Get the active Supabase auth session
+            const { data } = await supabase.auth.getSession();
+
+            if (!data.session) {
+                // Not logged in → redirect to login page
+                window.location.href = "login.html";
+            }
+        }
+
+        checkLogin();
+    </script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f6f9;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: #0077cc;
+            padding: 15px;
+            color: white;
+            font-size: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #logoutBtn {
+            background: #ff4d4d;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+        #logoutBtn:hover {
+            background: #cc0000;
+        }
+        .container {
+            padding: 20px;
+        }
+    </style>
 </head>
-<body style="font-family:system-ui, sans-serif; padding:24px;">
-  <h2 id="welcome">Checking session...</h2>
-  <p>You are on the AMI dashboard (demo).</p>
-  <button onclick="amiLogout()">Logout</button>
+
+<body>
+    <header>
+        <div>AMI Health — Dashboard</div>
+        <button id="logoutBtn">Logout</button>
+    </header>
+
+    <div class="container">
+        <h2>Welcome to your dashboard</h2>
+        <p>This page is protected. Only logged-in users can see this.</p>
+
+        <!-- YOUR FUTURE DASHBOARD CONTENT GOES HERE -->
+    </div>
+
+    <!-- Logout script -->
+    <script type="module">
+        import { supabase } from "./lib/supabaseClient.js";
+
+        // Logout function
+        document.getElementById("logoutBtn").onclick = async () => {
+            await supabase.auth.signOut();
+            window.location.href = "login.html";
+        };
+    </script>
+
 </body>
 </html>
