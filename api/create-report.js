@@ -2,10 +2,10 @@
 
 import { createClient } from "@supabase/supabase-js";
 
-// Use your actual Vercel secrets
+// Use your real environment variable names
 const supabase = createClient(
-  process.env.MY_SUPABASE_URL,
-  process.env.MY_SUPABASE_SERVICE_ROLE_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 export default async function handler(req, res) {
