@@ -117,3 +117,38 @@
 
 </body>
 </html>
+<script>
+document.getElementById("loginForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  const status = document.getElementById("status");
+  status.textContent = "Logging in...";
+
+  try {
+    const resp = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+
+    const json = await resp.json();
+
+    if (!resp.ok) {
+      status.textContent = json.error || "Login failed";
+      return;
+    }
+
+    // Save login session in browser
+    localStorage.setItem("user_email", email);
+
+    // Redirect to upload page
+    window.location.href = "upload.html";
+
+  } catch (err) {
+    status.textContent = "Error: " + err.message;
+  }
+});
+</script>
