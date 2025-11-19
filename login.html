@@ -1,70 +1,42 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AMI — Login</title>
-  <link rel="stylesheet" href="/styles.css" />
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+    <title>AMI Health – Login</title>
+    <meta charset="UTF-8" />
+    <script type="module">
+        import { supabase } from "./lib/supabaseClient.js";
 
-    // ← Replace YOUR_ANON_KEY_HERE with the anon key you copied (do NOT share it)
-    const SUPABASE_URL = "https://tbyttsfztuudyqbrkonm.supabase.co";
-    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieXR0c2Z6dHV1ZHlxYnJrb25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MzA1MzgsImV4cCI6MjA3OTAwNjUzOH0.7T0S4_kkoWosdbmjlwtfSYzBcyipcPg1Fm8kIMa43uo";
+        async function loginUser() {
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
 
-    async function login() {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
+            if (error) {
+                alert("❌ Login failed: " + error.message);
+                return;
+            }
 
-      if (!email || !password) {
-        alert("Please enter email and password.");
-        return;
-      }
+            // Save user session
+            localStorage.setItem("ami_session", JSON.stringify(data));
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+            // Redirect to dashboard
+            window.location.href = "dashboard.html";
+        }
 
-      if (error) {
-        alert("Login failed: " + error.message);
-        console.error(error);
-        return;
-      }
-
-      // Successful login: redirect to dashboard
-      window.location.href = "/dashboard.html";
-    }
-
-    // Make function available to the button
-    window.amiLogin = login;
-  </script>
+        window.loginUser = loginUser;
+    </script>
 </head>
+
 <body>
-  <main class="container" style="font-family:system-ui, sans-serif; max-width:720px; margin:40px auto;">
-    <header style="display:flex; align-items:center; gap:16px;">
-      <img src="/logo.png" alt="AMI logo" style="height:60px" />
-      <div>
-        <h1 style="margin:0;">AMI — Secure Login</h1>
-        <small>Smarter diagnostics • Better care</small>
-      </div>
-    </header>
+    <h2>Login to AMI Health</h2>
 
-    <section class="card" style="margin-top:28px; padding:20px; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.06);">
-      <label for="email">Email</label><br/>
-      <input id="email" type="email" placeholder="you@domain.com" style="width:100%; padding:10px; margin:8px 0;" />
+    <input id="email" type="email" placeholder="Email" /><br><br>
+    <input id="password" type="password" placeholder="Password" /><br><br>
 
-      <label for="password">Password</label><br/>
-      <input id="password" type="password" placeholder="Your password" style="width:100%; padding:10px; margin:8px 0;" />
-
-      <button id="loginBtn" onclick="amiLogin()" style="margin-top:12px; padding:10px 16px;">Login</button>
-    </section>
-
-    <footer style="margin-top:18px; text-align:center; color:#666;">
-      <small>AMI — Smarter diagnostics, better care</small>
-    </footer>
-  </main>
+    <button onclick="loginUser()">Login</button>
 </body>
 </html>
