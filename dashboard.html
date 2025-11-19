@@ -1,126 +1,171 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AMI Dashboard</title>
+  <meta charset="utf-8" />
+  <title>AMI Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
 
-  <!-- Correct CSS path -->
-  <link rel="stylesheet" href="/styles.css">
+  <style>
+    body {
+      margin: 0;
+      background: #f4f7fb;
+      font-family: Inter, Arial, sans-serif;
+    }
 
-  <style>
-    body {
-      background: #f5f5f5;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
+    .topbar {
+      background: #0b4f8a;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: white;
+    }
 
-    .topbar {
-      width: 100%;
-      background: #007bff;
-      padding: 15px;
-      color: white;
-      font-size: 20px;
-      text-align: center;
-    }
+    .logo {
+      height: 38px;
+      cursor: pointer;
+    }
 
-    .container {
-      max-width: 900px;
-      margin: 40px auto;
-      background: white;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px #0002;
-    }
+    .logout-btn {
+      background: #ff3b30;
+      border: none;
+      padding: 8px 14px;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
 
-    h2 {
-      margin-bottom: 10px;
-    }
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+    }
 
-    .email-box {
-      padding: 10px;
-      background: #e9f0ff;
-      border-left: 4px solid #007bff;
-      margin-bottom: 20px;
-      font-size: 16px;
-    }
+    h2 {
+      margin-top: 0;
+      color: #0b4f8a;
+      font-size: 26px;
+      font-weight: 700;
+    }
 
-    button {
-      padding: 12px 20px;
-      background: #007bff;
-      color: white;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-right: 8px;
-    }
+    .button-bar {
+      margin-bottom: 24px;
+      display: flex;
+      gap: 12px;
+    }
 
-    button:hover {
-      background: #0068d4;
-    }
+    .btn {
+      background: #007aff;
+      padding: 10px 18px;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+      font-size: 15px;
+    }
 
-    .danger {
-      background: #dc3545;
-    }
-    .danger:hover {
-      background: #b82c3a;
-    }
+    table {
+      width: 100%;
+      margin-top: 16px;
+      border-collapse: collapse;
+    }
 
-    .section {
-      margin-top: 30px;
-      padding-top: 15px;
-      border-top: 1px solid #ddd;
-    }
-  </style>
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+
+    th {
+      background: #f1f7ff;
+      color: #0b4f8a;
+    }
+
+    .empty {
+      text-align: center;
+      color: #777;
+      padding: 20px;
+      font-size: 15px;
+    }
+  </style>
 </head>
 
 <body>
 
-  <div class="topbar">AMI Dashboard</div>
+  <!-- TOP BAR WITH LOGO -->
+  <div class="topbar">
+    <img src="logo.png" class="logo" onclick="window.location.href='dashboard.html'">
+    <button class="logout-btn" id="logoutBtn">Logout</button>
+  </div>
 
-  <div class="container">
-    <h2>Welcome</h2>
+  <div class="container">
+    <h2>Your Uploaded Reports</h2>
 
-    <!-- Logged-in user email -->
-    <div class="email-box">
-      Logged in as: <span id="user-email">loading...</span>
-    </div>
+    <div class="button-bar">
+      <button class="btn" onclick="window.location.href='upload.html'">➕ Upload New Report</button>
+    </div>
 
-    <button onclick="goToUpload()">Upload Report</button>
-    <button onclick="goToHistory()">View Report History</button>
-    <button class="danger" onclick="logout()">Logout</button>
+    <table id="reportsTable">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>File</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="reportsBody">
+        <tr><td class="empty" colspan="3">Loading reports...</td></tr>
+      </tbody>
+    </table>
+  </div>
 
-    <div id="status" style="margin-top:15px; color:red;"></div>
+  <script type="module">
+    // REDIRECT IF NOT LOGGED IN
+    const email = localStorage.getItem("user_email");
+    if (!email) {
+      window.location.href = "login.html";
+    }
 
-    <div class="section">
-      <h3>Next Steps for AMI</h3>
-      <p>✓ Connect AI engine</p>
-      <p>✓ Save medical reports</p>
-      <p>✓ Generate smart insights</p>
-      <p>✓ Doctor dashboard & report sharing</p>
-    </div>
-  </div>
+    // LOGOUT
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("user_email");
+      window.location.href = "login.html";
+    });
 
-<script>
-  // Show email from login
-  const email = localStorage.getItem("user_email");
-  document.getElementById("user-email").innerText = email || "Unknown";
+    // FETCH REPORTS FOR THIS USER
+    async function loadReports() {
+      try {
+        const resp = await fetch("/api/get-reports?email=" + encodeURIComponent(email));
+        const json = await resp.json();
 
-  function logout() {
-    localStorage.removeItem("user_email");
-    window.location.href = "/login.html";
-  }
+        const body = document.getElementById("reportsBody");
+        body.innerHTML = "";
 
-  function goToUpload() {
-    window.location.href = "/upload.html"; // You will create this soon
-  }
+        if (!resp.ok || !json || json.length === 0) {
+          body.innerHTML = `<tr><td class="empty" colspan="3">No reports found.</td></tr>`;
+          return;
+        }
 
-  function goToHistory() {
-    window.location.href = "/history.html"; // Optional next page
-  }
-</script>
+        json.forEach(r => {
+          body.innerHTML += `
+            <tr>
+              <td>${r.title}</td>
+              <td><a href="https://tbyttsfztuudyqbrkonm.supabase.co/storage/v1/object/public/reports/${r.file_path}" target="_blank">View</a></td>
+              <td>${new Date(r.created_at).toLocaleString()}</td>
+            </tr>
+          `;
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    loadReports();
+  </script>
 
 </body>
 </html>
