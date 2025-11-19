@@ -1,42 +1,132 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>AMI Health – Login</title>
-    <meta charset="UTF-8" />
-    <script type="module">
-        import { supabase } from "./lib/supabaseClient.js";
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AMI Login</title>
 
-        async function loginUser() {
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value;
+    <script type="module">
+        import { supabase } from "./lib/supabaseClient.js";
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password
-            });
+        // If already logged in → go straight to dashboard
+        supabase.auth.getSession().then(({ data }) => {
+            if (data.session) {
+                window.location.href = "dashboard.html";
+            }
+        });
+    </script>
 
-            if (error) {
-                alert("❌ Login failed: " + error.message);
-                return;
-            }
-
-            // Save user session
-            localStorage.setItem("ami_session", JSON.stringify(data));
-
-            // Redirect to dashboard
-            window.location.href = "dashboard.html";
-        }
-
-        window.loginUser = loginUser;
-    </script>
+    <style>
+        body {
+            margin: 0;
+            background: #f0f4f8;
+            font-family: Arial, sans-serif;
+        }
+        .login-box {
+            width: 350px;
+            margin: 90px auto;
+            padding: 25px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 12px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #0077cc;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0 14px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #0077cc;
+            border: none;
+            color: white;
+            font-size: 17px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #005fa3;
+        }
+        .error {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 15px;
+        }
+    </style>
 </head>
 
 <body>
-    <h2>Login to AMI Health</h2>
+    <div class="login-box">
+        <h2>AMI Login</h2>
 
-    <input id="email" type="email" placeholder="Email" /><br><br>
-    <input id="password" type="password" placeholder="Password" /><br><br>
+        <input type="email" id="email" placeholder="Email" />
+        <input type="password" id="password" placeholder="Password" />
 
-    <button onclick="loginUser()">Login</button>
+        <button id="loginBtn">Login</button>
+
+        <div id="error" class="error"></div>
+    </div>
+
+    <script type="module">
+        import { supabase } from "./lib/supabaseClient.js";
+
+        document.getElementById("loginBtn").onclick = async () => {
+
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const errorBox = document.getElementById("error");
+
+            errorBox.textContent = "";
+
+            if (!email || !password) {
+                errorBox.textContent = "Please enter email and password.";
+                return;
+            }
+
+            // Call your Edge Function "login"
+            const res = await fetch(
+                "https://tbyttsfztuudyqbrkonm.supabase.co/functions/v1/login",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer YOUR_EDGE_FUNCTION_KEY"
+                    },
+                    body: JSON.stringify({ email, password })
+                }
+            );
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                errorBox.textContent = data.message || "Login failed";
+                return;
+            }
+
+            // SUCCESS: Set Supabase session
+            const { error: authError } = await supabase.auth.setSession({
+                access_token: data.token,
+                refresh_token: data.refresh_token
+            });
+
+            if (authError) {
+                errorBox.textContent = "Session error";
+                return;
+            }
+
+            // Redirect to dashboard
+            window.location.href = "dashboard.html";
+        };
+    </script>
 </body>
 </html>
