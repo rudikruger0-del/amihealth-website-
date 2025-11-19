@@ -1,83 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AMI Dashboard</title>
+  <meta charset="UTF-8">
+  <title>AMI Health – Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Protect dashboard: user must be logged in -->
-    <script type="module">
-        import { supabase } from "./lib/supabaseClient.js";
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
 
-        async function checkLogin() {
-            // Get the active Supabase auth session
-            const { data } = await supabase.auth.getSession();
+    .topbar {
+      background: #007aff;
+      padding: 15px;
+      color: white;
+      font-size: 20px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-            if (!data.session) {
-                // Not logged in → redirect to login page
-                window.location.href = "login.html";
-            }
-        }
+    .logout-btn {
+      background: #ff3b30;
+      padding: 8px 15px;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
 
-        checkLogin();
-    </script>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f2f6f9;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background: #0077cc;
-            padding: 15px;
-            color: white;
-            font-size: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        #logoutBtn {
-            background: #ff4d4d;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            color: white;
-            cursor: pointer;
-        }
-        #logoutBtn:hover {
-            background: #cc0000;
-        }
-        .container {
-            padding: 20px;
-        }
-    </style>
+    .logout-btn:hover {
+      background: #d92c23;
+    }
+  </style>
 </head>
-
 <body>
-    <header>
-        <div>AMI Health — Dashboard</div>
-        <button id="logoutBtn">Logout</button>
-    </header>
 
-    <div class="container">
-        <h2>Welcome to your dashboard</h2>
-        <p>This page is protected. Only logged-in users can see this.</p>
+  <div class="topbar">
+    <span>AMI Health Dashboard</span>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
 
-        <!-- YOUR FUTURE DASHBOARD CONTENT GOES HERE -->
-    </div>
+  <h2>Welcome to your dashboard</h2>
+  <p>You are successfully logged in.</p>
 
-    <!-- Logout script -->
-    <script type="module">
-        import { supabase } from "./lib/supabaseClient.js";
+  <script>
+    // BLOCK ACCESS unless logged in
+    const userEmail = localStorage.getItem("user_email");
 
-        // Logout function
-        document.getElementById("logoutBtn").onclick = async () => {
-            await supabase.auth.signOut();
-            window.location.href = "login.html";
-        };
-    </script>
+    if (!userEmail) {
+      // No login → redirect away
+      window.location.href = "login.html";
+    }
+
+    function logout() {
+      localStorage.removeItem("user_email");
+      window.location.href = "login.html";
+    }
+  </script>
 
 </body>
 </html>
