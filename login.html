@@ -2,30 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AMI Health – Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AMI Login</title>
+
+  <!-- Correct CSS path -->
+  <link rel="stylesheet" href="/styles.css">
 
   <style>
     body {
       background: #f5f5f5;
       font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
       margin: 0;
+      padding: 0;
     }
 
-    .login-box {
+    .container {
+      width: 100%;
+      max-width: 380px;
+      margin: 80px auto;
       background: white;
-      padding: 25px;
-      width: 350px;
+      padding: 30px;
       border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      text-align: center;
+      box-shadow: 0 0 10px #0002;
     }
 
-    h2 {
-      text-align: center;
+    .logo {
+      width: 120px;
       margin-bottom: 20px;
     }
 
@@ -41,73 +44,73 @@
     button {
       width: 100%;
       padding: 12px;
-      background: #007aff;
-      color: white;
+      margin-top: 10px;
       border: none;
+      background: #007bff;
+      color: white;
+      font-size: 17px;
       border-radius: 6px;
-      font-size: 16px;
       cursor: pointer;
     }
 
     button:hover {
-      background: #0068d6;
+      background: #0068d4;
     }
 
-    .error {
+    #status {
+      margin-top: 15px;
+      font-size: 15px;
       color: red;
-      margin-top: 10px;
-      text-align: center;
     }
   </style>
 </head>
 
 <body>
-  <div class="login-box">
+
+  <div class="container">
+
+    <!-- Correct logo path -->
+    <img src="/logo.png" class="logo" alt="AMI Logo">
+
     <h2>Login</h2>
 
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
+    <input id="email" type="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+
     <button onclick="login()">Login</button>
 
-    <div id="error" class="error"></div>
+    <div id="status"></div>
   </div>
+
 
   <script>
     async function login() {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
-      const errorBox = document.getElementById("error");
-      errorBox.textContent = "";
+      const status = document.getElementById("status");
 
-      if (!email || !password) {
-        errorBox.textContent = "Please enter email and password.";
-        return;
-      }
+      status.innerText = "Logging in...";
 
       try {
         const response = await fetch("/api/login", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password })
         });
 
-        const data = await response.json();
+        const result = await response.json();
 
-        if (!response.ok) {
-          errorBox.textContent = data.error || "Login failed";
-          return;
+        if (response.ok) {
+          status.innerText = "Success! Redirecting...";
+          setTimeout(() => {
+            window.location.href = "/dashboard.html";
+          }, 800);
+        } else {
+          status.innerText = result.error || "Login failed";
         }
 
-        // Save login info
-        localStorage.setItem("user_email", email);
-
-        // Redirect to dashboard
-        window.location.href = "dashboard.html";
-
       } catch (err) {
-        errorBox.textContent = "Server error. Try again.";
+        status.innerText = "Network error";
       }
     }
   </script>
