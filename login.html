@@ -108,7 +108,8 @@
         }
 
         // Success → redirect
-        window.location.href = "dashboard.html";
+ocalStorage.setItem("user_email", email);
+window.location.href = "dashboard.html";
 
       } catch (err) {
         errorBox.innerText = "Network error. Try again.";
