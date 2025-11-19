@@ -2,58 +2,67 @@
 
 import { createClient } from "@supabase/supabase-js";
 
-// Create Supabase client using environment variables
+// IMPORTANT — Vercel environment variables (must be set in Vercel dashboard)
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_URL,       // safe URL
+  process.env.SUPABASE_SERVICE_ROLE_KEY       // secret key (server only)
 );
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
-  try {
-    // Read raw request body
-    let body = "";
-    await new Promise(resolve => {
-      req.on("data", chunk => (body += chunk));
-      req.on("end", resolve);
-    });
+  try {
+    // Read raw request body
+    let raw = "";
+    await new Promise(resolve => {
+      req.on("data", chunk => (raw += chunk));
+      req.on("end", resolve);
+    });
 
-    let data;
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      return res.status(400).json({ error: "Invalid JSON" });
+    }
 
-    try {
-      data = JSON.parse(body);
-    } catch (err) {
-      return res.status(400).json({ error: "Invalid JSON" });
-    }
+    // Extract fields
+    const { email, title, files } = data;
 
-    const { email, title, file_path } = data;
+    if (!email || !files || !Array.isArray(files) || files.length === 0) {
+      return res.status(400).json({ error: "email + files[] required" });
+    }
 
-    if (!email || !file_path) {
-      return res.status(400).json({ error: "Email and file_path required" });
-    }
+    // Insert into Supabase table "reports"
+    const { data: insert, error } = await supabase
+      .from("reports")
+      .insert([
+        {
+          email: email,
+          title: title || "Untitled Report",
+          file_paths: files,     // store array of files
+          status: "queued",
+          created_at: new Date().toISOString()
+        }
+      ])
+      .select()
+      .single();
 
-    // Insert into Supabase
-    const { error: insertError } = await supabase.from("reports").insert([
-      {
-        email,
-        title: title || "Untitled Report",
-        file_path,
-        created_at: new Date().toISOString()
-      }
-    ]);
+    if (error) {
+      console.error("Supabase insert error:", error);
+      return res.status(500).json({ error: "Database insert failed" });
+    }
 
-    if (insertError) {
-      console.error("Supabase insert error:", insertError);
-      return res.status(500).json({ error: "Failed to save report" });
-    }
+    return res.status(200).json({
+      success: true,
+      id: insert.id,
+      message: "Report saved & queued"
+    });
 
-    return res.status(200).json({ success: true, message: "Report saved" });
-
-  } catch (err) {
-    console.error("Server error:", err);
-    return res.status(500).json({ error: "Server error" });
-  }
+  } catch (err) {
+    console.error("Server error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
 }
