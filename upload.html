@@ -102,21 +102,23 @@
           li.textContent = `Uploaded: ${path}`;
         }
 
-        // call backend to create DB record (server function uses service role key)
-        const resp = await fetch('/api/create-report', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({
-    owner_user_email: user,
-    title,
-    file_path: uploaded[0],
-    files: uploaded
-})
-        const json = await resp.json();
-        if (!resp.ok) throw new Error(json.error || 'Failed to create report record');
+// call backend to create DB record (server function uses service role key)
+const resp = await fetch('/api/create-report', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    owner_user_email: user,
+    title: title,
+    file_path: uploaded[0],
+    files: uploaded
+  })
+});
 
-        progressArea.innerText = 'Uploaded & queued. Report ID: ' + (json.id || 'N/A');
+const json = await resp.json();
+if (!resp.ok) throw new Error(json.error || 'Failed to create report record');
 
+progressArea.innerText =
+  'Uploaded & queued. Report ID: ' + (json.id || 'N/A');
       } catch (err) {
         console.error(err);
         progressArea.innerText = 'Error: ' + (err.message || err);
