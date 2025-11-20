@@ -392,6 +392,10 @@ nav a, .login-btn {
  // First tap/click unlocks sound
  document.addEventListener("click", unlockAudio, { once: true });
  document.addEventListener("touchstart", unlockAudio, { once: true });
+<script>
+document.querySelectorAll("a").forEach(a => {
+  a.addEventListener("click", () => alert("CLICKED: " + a.href));
+});
 </script>
 </body>
 </html>
