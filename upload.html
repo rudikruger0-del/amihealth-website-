@@ -106,7 +106,11 @@
         const resp = await fetch('/api/create-report', {
           method: 'POST',
           headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({ email: user, title, file_path: uploaded[0], files: uploaded })
+         body: JSON.stringify({
+  owner_user_email: user,
+  title: title,
+  files: uploaded
+})
         });
         const json = await resp.json();
         if (!resp.ok) throw new Error(json.error || 'Failed to create report record');
