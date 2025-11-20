@@ -7,6 +7,27 @@
   <meta name="description" content="AMI — advanced medical AI that fuses imaging, laboratory data, and clinical notes into a unified diagnostic report for hospitals, clinics, and labs." />
 
   <style>
+    /* FIX NAV + LOGIN CLICK + MOBILE VISIBILITY */
+@media (max-width:900px) {
+  nav {
+    display: flex !important;
+    background: rgba(0,0,0,0.4);
+    padding: 12px;
+    border-radius: 10px;
+    position: relative;
+    z-index: 99999 !important;
+  }
+}
+
+.overlay {
+  pointer-events: none !important; /* overlay no longer blocks clicks */
+}
+
+nav a, .login-btn {
+  pointer-events: auto !important;
+  z-index: 999999 !important;
+  position: relative;
+}
     :root {
       --bg:#030414;
       --card:#0b1020;
