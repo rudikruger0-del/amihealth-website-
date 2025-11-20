@@ -1,5 +1,5 @@
 // api/create-report.js
-
+export const config = { runtime: "nodejs" };
 import { createClient } from "@supabase/supabase-js";
 
 // Create service client (server-side only)
