@@ -28,9 +28,9 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Invalid JSON" });
     }
 
-    const { title, files, owner_user_email } = data;
-
-    if (!files || files.length === 0 || !owner_user_email) {
+    const { title, files, email } = data;
+    
+    if (!files || files.length === 0 || !email) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
     const { data: inserted, error } = await supabase
       .from("reports")
       .insert({
-        email: owner_user_email,
+        email: email,
         title: title || "Untitled Report",
         file_path: files[0], // Save first file path for now
         created_at: new Date().toISOString()
