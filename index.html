@@ -50,7 +50,7 @@
       text-decoration:none;
     }
 
-    /* ⭐ LOGIN BUTTON (only new thing) */
+    /* LOGIN BUTTON */
     .login-btn {
       background:#ffffff;
       color:#030414;
@@ -98,7 +98,6 @@
       font-size:13px;
     }
 
-    /* SECTIONS */
     section.card {
       background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
       border-radius:12px;
@@ -135,7 +134,6 @@
       color:#dff;
     }
 
-    /* USE CASES */
     .use { display:flex; gap:14px; flex-wrap:wrap; }
     .use-card {
       flex:1;
@@ -146,10 +144,8 @@
     }
     .small { font-size:13px; color:var(--muted); }
 
-    /* FOOTER */
     footer { padding:28px 0; text-align:center; color:var(--muted); font-size:14px; }
 
-    /* RESPONSIVE */
     @media (max-width:900px){
       .hero video{height:340px}
       .hero-content{max-width:100%}
@@ -157,7 +153,6 @@
       nav{display:none}
     }
 
-    /* animation */
     .fade-in { animation:fade 900ms ease both; }
     @keyframes fade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
   </style>
@@ -181,13 +176,13 @@
         <a href="#usecases">Use Cases</a>
         <a href="#trust">Safety</a>
         <a class="cta" href="#contact">Request Pilot</a>
-        <!-- ⭐ NEW LOGIN BUTTON -->
+
+        <!-- ⭐ ADDED LOGIN BUTTON -->
         <a class="login-btn" href="login.html">Login</a>
       </nav>
     </header>
   </div>
 
-  <!-- HERO VIDEO WITH SOUND ACTIVATION -->
   <div class="wrap">
     <div class="hero">
       <video id="heroVideo" autoplay muted playsinline loop>
@@ -210,17 +205,12 @@
     </div>
   </div>
 
-  <!-- WHY AMI -->
   <div class="wrap">
     <section class="card fade-in" id="how">
       <div class="grid">
         <div>
           <h2>Why AMI</h2>
-          <p class="muted">
-            Radiology backlogs, delayed lab interpretation, and fragmented clinical data reduce diagnostic accuracy.
-            AMI unifies signals from images, labs and text into a single AI-augmented medical report designed to
-            support clinical judgement and reduce time to action.
-          </p>
+          <p class="muted">Radiology backlogs, delayed lab interpretation, and fragmented clinical data reduce diagnostic accuracy. AMI unifies signals from images, labs and text into a single AI-augmented medical report designed to support clinical judgement and reduce time to action.</p>
 
           <div class="stats">
             <div class="stat">
@@ -238,12 +228,8 @@
         <aside>
           <div style="background:linear-gradient(180deg,#031325,#071a2a);padding:18px;border-radius:12px">
             <div style="font-size:13px;color:var(--muted)">Clinical Outcome</div>
-            <div style="font-size:26px;color:var(--accent);font-weight:800;margin-top:8px">
-              Better decisions. Faster care.
-            </div>
-            <div style="color:var(--muted);margin-top:12px">
-              Designed for radiology, oncology, emergency and general practice workflows.
-            </div>
+            <div style="font-size:26px;color:var(--accent);font-weight:800;margin-top:8px">Better decisions. Faster care.</div>
+            <div style="color:var(--muted);margin-top:12px">Designed for radiology, oncology, emergency and general practice workflows.</div>
             <div style="margin-top:16px">
               <a class="cta" href="#contact">Request Pilot</a>
             </div>
@@ -253,15 +239,10 @@
     </section>
   </div>
 
-  <!-- TECHNOLOGY -->
   <div class="wrap">
     <section class="card fade-in" id="tech">
       <h2>Technology</h2>
-      <p class="muted">
-        AMI combines vision transformers, clinical NLP models and structured lab analyzers into a unified multimodal
-        AI stack. Our architecture aligns imaging features with biochemical trends and clinical narratives to deliver
-        clinically coherent outputs.
-      </p>
+      <p class="muted">AMI combines vision transformers, clinical NLP models and structured lab analyzers into a unified multimodal AI stack. Our architecture aligns imaging features with biochemical trends and clinical narratives to deliver clinically coherent outputs.</p>
 
       <div class="tech-list">
         <div class="tech-item">Explainable AI (Heatmaps & Traceability)</div>
@@ -272,7 +253,6 @@
     </section>
   </div>
 
-  <!-- USE CASES -->
   <div class="wrap">
     <section class="card fade-in" id="usecases">
       <h2>Use Cases</h2>
@@ -298,14 +278,10 @@
     </section>
   </div>
 
-  <!-- SAFETY -->
   <div class="wrap">
     <section class="card fade-in" id="trust">
       <h2>Safety & Trust</h2>
-      <p class="muted">
-        Built with clinical oversight and safety as core principles. AMI incorporates data encryption, audit logs,
-        drift-detection, model explainability and human-in-the-loop review to ensure high clinical reliability.
-      </p>
+      <p class="muted">Built with clinical oversight and safety as core principles. AMI incorporates data encryption, audit logs, drift-detection, model explainability and human-in-the-loop review to ensure high clinical reliability.</p>
 
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:16px">
         <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:10px">
@@ -324,22 +300,15 @@
     </section>
   </div>
 
-  <!-- CONTACT -->
   <div class="wrap">
     <section class="card fade-in" id="contact">
       <h2>Contact & Pilot Requests</h2>
-      <p class="muted">
-        Hospitals, labs and clinics can request early access to AMI’s pilot programme. Includes integration support
-        and clinical guidance.
-      </p>
+      <p class="muted">Hospitals, labs and clinics can request early access to AMI’s pilot programme. Includes integration support and clinical guidance.</p>
 
       <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:12px">
         <div style="flex:1;min-width:220px;background:rgba(0,0,0,0.16);padding:14px;border-radius:10px">
           <strong>Contact</strong>
-          <div class="small" style="margin-top:8px">
-            Email:
-            <a href="mailto:info@amihealth.co.za" style="color:var(--accent)">info@amihealth.co.za</a>
-          </div>
+          <div class="small" style="margin-top:8px">Email: <a href="mailto:info@amihealth.co.za" style="color:var(--accent)">info@amihealth.co.za</a></div>
           <div class="small" style="margin-top:6px">Phone: +27 00 000 0000</div>
         </div>
 
@@ -359,41 +328,32 @@
     </footer>
   </div>
 
-  <script>
-    // Dynamic year
-    document.getElementById('year').innerText = new Date().getFullYear();
+<script>
+  document.getElementById('year').innerText = new Date().getFullYear();
 
-    // Smooth scroll
-    document.querySelectorAll('a[href^="#"]').forEach(link => {
-      link.addEventListener("click", function(e){
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute("href"));
-        if(target) target.scrollIntoView({ behavior:"smooth", block:"start" });
-      });
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener("click", function(e){
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute("href"));
+      if(target) target.scrollIntoView({ behavior:"smooth", block:"start" });
     });
+  });
 
-    // Guarantee sound unlock on ANY interaction
-    const vid = document.getElementById("heroVideo");
+  const vid = document.getElementById("heroVideo");
 
-    function unlockAudio() {
-      vid.muted = false;
-      vid.volume = 1.0;
-      const playPromise = vid.play();
-      if (playPromise !== undefined) {
-        playPromise.then(_ => {
-          // sound unlocked
-        }).catch(_ => {
-          // retry
-          setTimeout(()=>{ vid.play(); }, 200);
-        });
-      }
-      document.removeEventListener("click", unlockAudio);
-      document.removeEventListener("touchstart", unlockAudio);
+  function unlockAudio() {
+    vid.muted = false;
+    vid.volume = 1.0;
+    const playPromise = vid.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(_ => setTimeout(()=>{ vid.play(); }, 200));
     }
+    document.removeEventListener("click", unlockAudio);
+    document.removeEventListener("touchstart", unlockAudio);
+  }
 
-    // First tap/click unlocks sound
-    document.addEventListener("click", unlockAudio, { once: true });
-    document.addEventListener("touchstart", unlockAudio, { once: true });
-  </script>
+  document.addEventListener("click", unlockAudio, { once: true });
+  document.addEventListener("touchstart", unlockAudio, { once: true });
+</script>
 </body>
 </html>
