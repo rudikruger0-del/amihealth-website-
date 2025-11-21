@@ -2,10 +2,12 @@
 import bcrypt from "bcryptjs";
 import { createClient } from "@supabase/supabase-js";
 
-// Use REAL environment variables
+export const config = { runtime: "nodejs" };
+
+// ✅ Use correct environment variables for API route
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_URL,        // NOT NEXT_PUBLIC
+  process.env.SUPABASE_ANON_KEY    // NOT SERVICE_ROLE
 );
 
 export default async function handler(req, res) {
@@ -13,7 +15,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  // Manually read body (Vercel fix)
+  // Read JSON body manually (Vercel)
   let body = "";
   await new Promise(resolve => {
     req.on("data", chunk => (body += chunk));
@@ -23,7 +25,7 @@ export default async function handler(req, res) {
   let data;
   try {
     data = JSON.parse(body);
-  } catch (err) {
+  } catch {
     return res.status(400).json({ error: "Invalid JSON" });
   }
 
@@ -33,7 +35,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Email and password required" });
   }
 
-  // Fetch user securely
+  // Get user
   const { data: user, error } = await supabase
     .from("users")
     .select("*")
@@ -44,7 +46,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: "Invalid email or password" });
   }
 
-  // Compare password
+  // Check password
   const valid = bcrypt.compareSync(password, user.password_hash);
 
   if (!valid) {
@@ -53,6 +55,9 @@ export default async function handler(req, res) {
 
   return res.status(200).json({
     success: true,
+    email: user.email
+  });
+}
     message: "Login successful",
     email: user.email
   });
