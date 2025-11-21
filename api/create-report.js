@@ -7,13 +7,8 @@ console.log("URL:", process.env.SUPABASE_URL);
 
 // Create service client (server-side only)
 const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 export default async function handler(req, res) {
@@ -37,20 +32,18 @@ export default async function handler(req, res) {
     }
 
     const { title, files, email } = data;
-    
+
     if (!files || files.length === 0 || !email) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // -----------------------------
-    // INSERT report entry into DB
-    // -----------------------------
+    // Insert report into DB
     const { data: inserted, error } = await supabase
       .from("reports")
       .insert({
         email: email,
         title: title || "Untitled Report",
-        file_path: files[0], // Save first file path for now
+        file_path: files[0],
         created_at: new Date().toISOString()
       })
       .select()
