@@ -6,9 +6,12 @@ console.log("SERVICE KEY LOADED?", process.env.SUPABASE_SERVICE_ROLE_KEY ? "YES"
 console.log("URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
 
 // Create service client (server-side only)
+console.log("SERVICE KEY LOADED?", process.env.SUPABASE_SERVICE_ROLE_KEY ? "YES" : "NO");
+console.log("URL:", process.env.SUPABASE_URL);
+
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 export default async function handler(req, res) {
