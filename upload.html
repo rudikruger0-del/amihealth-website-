@@ -100,17 +100,24 @@
         li.innerText = `Uploaded: ${path}`;
       }
 
-      // CALL BACKEND
-      const resp = await fetch("/api/create-report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: user,
-          title: document.getElementById("title").value || null,
-          file_path: uploaded[0],
-          files: uploaded,
-        }),
-      });
+    // CALL BACKEND
+const resp = await fetch("/api/create-report", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    email: user,
+    title: document.getElementById("title").value || null,
+    files: uploaded
+  })
+});
+
+const json = await resp.json();
+if (!resp.ok) throw new Error(json.error || "Failed to create report record");
+
+progressArea.innerText =
+  "Uploaded & queued. Report ID: " + (json.id || "N/A");
 
       const json = await resp.json();
       if (!resp.ok) throw new Error(json.error || "Failed to create report record");
