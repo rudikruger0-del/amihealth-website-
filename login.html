@@ -36,14 +36,22 @@
 
       <button id="loginBtn" class="btn">Login</button>
       <div id="status"></div>
-      <div class="small">Don't have an account? Contact <a href="mailto:info@amihealth.co.za" style="color:var(--accent)">info@amihealth.co.za</a></div>
+      <div class="small">Don't have an account? Contact 
+        <a href="mailto:info@amihealth.co.za" style="color:var(--accent)">info@amihealth.co.za</a>
+      </div>
     </div>
   </div>
 
-<script>
-  // login action
-  document.getElementById("loginBtn").addEventListener("click", async () => {
-    const statusEl = document.getElementById("status");
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+  const SUPA_URL = "https://tbyttsfztuudyqbrkonm.supabase.co";
+  const SUPA_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieXR0c2Z6dHV1ZHlxYnJrb25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MzA1MzgsImV4cCI6MjA3OTAwNjUzOH0.7T0S4_kkoWosdbmjlwtfSYzBcyipcPg1Fm8kIMa43uo";
+
+  const supabase = createClient(SUPA_URL, SUPA_ANON);
+  const statusEl = document.getElementById("status");
+
+  document.getElementById("loginBtn").onclick = async () => {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
 
@@ -55,35 +63,25 @@
     statusEl.style.color = "#ffd";
     statusEl.textContent = "Logging in...";
 
-    try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
 
-      const json = await res.json();
-
-      if (!res.ok) {
-        statusEl.style.color = "#ffb3b3";
-        statusEl.textContent = json.error || "Login failed";
-        return;
-      }
-
-      // Save user session locally and redirect
-      localStorage.setItem("user_email", json.email || email);
-      statusEl.style.color = "#bfffcf";
-      statusEl.textContent = "Success — redirecting...";
-      setTimeout(() => window.location.href = "/dashboard.html", 700);
-
-    } catch (err) {
+    if (error) {
       statusEl.style.color = "#ffb3b3";
-      statusEl.textContent = "Network error";
-      console.error(err);
+      statusEl.textContent = error.message;
+      return;
     }
-  });
 
-  // allow pressing Enter to submit
+    // Save user email
+    localStorage.setItem("user_email", email);
+
+    statusEl.style.color = "#bfffcf";
+    statusEl.textContent = "Success — redirecting...";
+    setTimeout(() => window.location.href = "/dashboard.html", 700);
+  };
+
   document.addEventListener("keydown", (e) => {
     if (e.key === "Enter") document.getElementById("loginBtn").click();
   });
