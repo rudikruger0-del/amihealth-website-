@@ -3,8 +3,8 @@ export const config = { runtime: "nodejs" };
 import { createClient } from "@supabase/supabase-js";
 
 // Debug
-console.log("SERVICE KEY LOADED?", process.env.SUPABASE_SERVICE_ROLE_KEY ? "YES" : "NO");
-console.log("URL:", process.env.SUPABASE_URL);
+console.log("SERVICE KEY:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "Loaded" : "MISSING");
+console.log("URL:", process.env.SUPABASE_URL || "Missing URL");
 
 // Create Supabase client (SERVER SIDE ONLY)
 const supabase = createClient(
