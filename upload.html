@@ -149,7 +149,9 @@
       }
 
       // Send to backend API (correct URL)
-      const resp = await fetch("/api/create-report.js", {
+      console.log("📡 Sending POST to /api/create-report");
+
+const resp = await fetch("/api/create-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
