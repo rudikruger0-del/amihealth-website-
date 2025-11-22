@@ -5,24 +5,54 @@
   <title>AMI — Upload Report</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="/styles.css" />
+  <style>
+    .upload-card {
+      background: white;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      max-width: 880px;
+      margin-top: 20px;
+    }
+
+    input[type="file"] {
+      background: #f7f7f7;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    #progressArea {
+      margin-top: 10px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    #filesList li {
+      padding: 6px 0;
+      border-bottom: 1px solid #eee;
+    }
+  </style>
 </head>
 
 <body>
   <div class="app">
-    
+
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="brand">
         <img src="/logo.png" alt="AMI logo" style="width:48px;height:auto;">
         <div>
           <h3>AMI Health</h3>
-          <p>Upload Reports</p>
+          <p>Upload reports</p>
         </div>
       </div>
 
       <nav class="nav">
         <a href="/dashboard.html">Dashboard</a>
-        <a class="active" href="/upload.html">Upload Report</a>
+        <a href="/upload.html" class="active">Upload Report</a>
       </nav>
 
       <div style="margin-top:auto">
@@ -32,35 +62,33 @@
       </div>
     </aside>
 
-    <!-- Main content -->
+    <!-- Main Content -->
     <main class="main">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div style="font-size:20px;font-weight:800;color:var(--accent)">
-          Upload Scan or Lab Report
-        </div>
+      <div style="font-weight:800;font-size:22px;color:var(--accent);">
+        Upload Scan or Lab Report
       </div>
 
-      <div class="card" style="max-width:880px">
+      <div class="upload-card">
         <p style="color:var(--muted)">
-          Select PDF or image files (jpg, png). Files are uploaded to Supabase Storage (bucket:
-          <code>reports</code>) and queued for processing.
+          Select PDF or image files (jpg, png). They will upload to Supabase Storage
+          (bucket: <code>reports</code>) and then be queued for AI analysis.
         </p>
 
-        <input id="fileInput" type="file" accept="image/*,application/pdf" multiple />
+        <input id="fileInput" type="file" accept="image/*,application/pdf" multiple>
 
-        <div style="display:flex;gap:10px;margin-top:10px">
+        <div style="display:flex;gap:10px;margin-top:12px;">
           <input id="title" type="text" placeholder="Report title (optional)"
-            style="flex:1;padding:10px;border-radius:8px;border:1px solid #eee" />
+                 style="flex:1;padding:12px;border-radius:8px;border:1px solid #ddd;">
           <button id="uploadBtn" class="btn">Upload & Queue</button>
         </div>
 
-        <div id="progressArea" style="margin-top:12px"></div>
-        <ul id="filesList" style="margin-top:10px"></ul>
+        <div id="progressArea"></div>
+        <ul id="filesList"></ul>
       </div>
     </main>
+
   </div>
 
-<!-- Script -->
 <script type="module">
   const SUPA_URL = "https://tbyttsfztuudyqbrkonm.supabase.co";
   const SUPA_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieXR0c2Z6dHV1ZHlxYnJrb25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MzA1MzgsImV4cCI6MjA3OTAwNjUzOH0.7T0S4_kkoWosdbmjlwtfSYzBcyipcPg1Fm8kIMa43uo";
@@ -69,9 +97,9 @@
   const supabase = createClient(SUPA_URL, SUPA_ANON);
 
   // Auth guard
-  const loggedInUser = localStorage.getItem("user_email");
-  if (!loggedInUser) window.location.href = "/login.html";
-  document.getElementById("userEmailSmall").innerText = loggedInUser;
+  const user = localStorage.getItem("user_email");
+  if (!user) window.location.href = "/login.html";
+  document.getElementById("userEmailSmall").innerText = user;
 
   document.getElementById("logoutBtn").onclick = () => {
     localStorage.removeItem("user_email");
@@ -89,14 +117,14 @@
 
     const { data, error } = await supabase.storage
       .from("reports")
-      .upload(filename, file);
+      .upload(filename, file, { cacheControl: "3600", upsert: false });
 
     if (error) throw error;
     return data.path;
   }
 
-  uploadBtn.onclick = async () => {
-    const files = [...(fileInput.files || [])];
+  uploadBtn.addEventListener("click", async () => {
+    const files = Array.from(fileInput.files || []);
     if (!files.length) {
       progressArea.innerText = "Please select at least one file.";
       return;
@@ -107,42 +135,44 @@
     filesList.innerHTML = "";
 
     try {
-      const uploaded = [];
+      const uploadedPaths = [];
 
-      for (const f of files) {
+      for (const file of files) {
         const li = document.createElement("li");
-        li.innerText = `Uploading ${f.name}...`;
+        li.innerText = `Uploading ${file.name}...`;
         filesList.appendChild(li);
 
-        const path = await uploadFile(f);
-        uploaded.push(path);
+        const path = await uploadFile(file);
+        uploadedPaths.push(path);
+
         li.innerText = `Uploaded: ${path}`;
       }
 
-     // CALL BACKEND
-const resp = await fetch("/api/create-report", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    email: user,
-    title: document.getElementById("title").value || null,
-    files: uploaded
-  })
-});
+      // Send to backend API (correct URL)
+      const resp = await fetch("/api/create-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user,
+          title: document.getElementById("title").value || null,
+          files: uploadedPaths
+        })
+      });
 
-      const result = await resp.json();
-      if (!resp.ok) throw new Error(result.error);
+      const json = await resp.json();
 
-      progressArea.innerText = "Uploaded & queued. Report ID: " + result.id;
+      if (!resp.ok) throw new Error(json.error || "Failed to create report record");
+
+      progressArea.innerText =
+        "Uploaded & queued. Report ID: " + (json.id || "N/A");
 
     } catch (err) {
-      progressArea.innerText = "Error: " + err.message;
       console.error(err);
-
+      progressArea.innerText = "Error: " + (err.message || err);
     } finally {
       uploadBtn.disabled = false;
     }
-  };
+  });
 </script>
 
 </body>
