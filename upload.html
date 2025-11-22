@@ -1,137 +1,225 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>AMI — Upload Report</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="/styles.css" />
+  <meta charset="utf-8" />
+  <title>AMI — Upload Report</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="/styles.css" />
+
+  <style>
+    /* PAGE LAYOUT MATCHING MAIN THEME */
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      background: #ffffff;
+      color: #0A1F44;
+    }
+
+    .app {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px;
+      background: #F7FAFC;
+      padding: 24px;
+      border-right: 1px solid #E3EEF9;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+    .brand img {
+      width: 48px;
+      height: auto;
+    }
+
+    .nav a {
+      display: block;
+      padding: 10px 0;
+      color: #0A1F44;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .nav a.active {
+      color: #1A4B84;
+      font-weight: 700;
+    }
+
+    /* MAIN CONTENT */
+    .main {
+      flex: 1;
+      padding: 40px;
+      background: #ffffff;
+    }
+
+    .card {
+      background: #F7FAFC;
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid #E3EEF9;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+    }
+
+    .btn {
+      background: #1A4B84;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn:hover {
+      background: #163d6d;
+    }
+
+    #filesList li {
+      margin: 4px 0;
+      color: #1A4B84;
+      font-weight: 500;
+    }
+  </style>
 </head>
+
 <body>
-  <div class="app">
-    <aside class="sidebar" role="navigation" aria-label="Main navigation">
-      <div class="brand">
-        <img src="/logo.png" alt="AMI logo">
-        <div><h3>AMI Health</h3><p>Upload reports</p></div>
-      </div>
-      <nav class="nav">
-        <a href="/dashboard.html">Dashboard</a>
-        <a href="/upload.html" class="active">Upload Report</a>
-      </nav>
-      <div style="margin-top:auto">
-        <div id="userEmailSmall" style="font-weight:700"></div>
-        <div style="height:10px"></div>
-        <button id="logoutBtn" class="btn">Logout</button>
-      </div>
-    </aside>
+  <div class="app">
 
-    <main class="main">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div style="font-weight:800;font-size:20px;color:var(--accent)">Upload Scan or Lab Report</div>
-      </div>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="/logo.png" alt="AMI logo">
+        <div>
+          <h3 style="margin:0;">AMI Health</h3>
+          <p style="margin:0;font-size:13px;color:#1A4B84;">Upload reports</p>
+        </div>
+      </div>
 
-      <div class="card" style="max-width:880px">
-        <p style="color:var(--muted)">Select PDF or image files (jpg, png). Files will be uploaded to Supabase Storage (bucket: <code>reports</code>) and queued for analysis.</p>
-        <input id="fileInput" type="file" accept="image/*,application/pdf" multiple>
-        <div style="display:flex;gap:8px;margin-top:10px">
-          <input id="title" type="text" placeholder="Report title (optional)" style="flex:1;padding:10px;border-radius:8px;border:1px solid #eee" />
-          <button id="uploadBtn" class="btn">Upload & Queue</button>
-        </div>
+      <nav class="nav">
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/upload.html" class="active">Upload Report</a>
+      </nav>
 
-        <div id="progressArea" style="margin-top:12px"></div>
-        <ul id="filesList" style="margin-top:10px"></ul>
-      </div>
-    </main>
-  </div>
+      <div style="margin-top:auto">
+        <div id="userEmailSmall" style="font-weight:700;font-size:14px;color:#1A4B84;"></div>
+        <button id="logoutBtn" class="btn" style="margin-top:10px;width:100%;">Logout</button>
+      </div>
+    </aside>
 
+    <!-- MAIN CONTENT -->
+    <main class="main">
+      <h2 style="color:#1A4B84;margin-top:0;">Upload Scan or Lab Report</h2>
+
+      <div class="card" style="max-width:880px;">
+        <p style="color:#6B7280;">
+          Select PDF or image files (jpg, png). These will upload to Supabase Storage.
+        </p>
+
+        <input id="fileInput" type="file" accept="image/*,application/pdf" multiple />
+
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <input id="title" type="text" placeholder="Report title (optional)"
+                 style="flex:1;padding:10px;border-radius:8px;border:1px solid #ccc;" />
+          <button id="uploadBtn" class="btn">Upload & Queue</button>
+        </div>
+
+        <div id="progressArea" style="margin-top:16px;color:#1A4B84;font-weight:600;"></div>
+        <ul id="filesList" style="margin-top:10px;list-style:none;padding-left:0;"></ul>
+      </div>
+    </main>
+  </div>
+
+<!-- SCRIPT -->
 <script type="module">
-  const SUPA_URL = "https://tbyttsfztuudyqbrkonm.supabase.co";
-  const SUPA_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieXR0c2Z6dHV1ZHlxYnJrb25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MzA1MzgsImV4cCI6MjA3OTAwNjUzOH0.7T0S4_kkoWosdbmjlwtfSYzBcyipcPg1Fm8kIMa43uo";
+  const SUPA_URL = "https://tbyttsfztuudyqbrkonm.supabase.co";
+  const SUPA_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieXR0c2Z6dHV1ZHlxYnJrb25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MzA1MzgsImV4cCI6MjA3OTAwNjUzOH0.7T0S4_kkoWosdbmjlwtfSYzBcyipcPg1Fm8kIMa43uo";
 
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-  const supabase = createClient(SUPA_URL, SUPA_ANON);
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  const supabase = createClient(SUPA_URL, SUPA_ANON);
 
-  // auth guard
-  const user = localStorage.getItem('user_email');
-  if (!user) window.location.href = "/login.html";
-  document.getElementById("userEmailSmall").innerText = user;
-  document.getElementById("logoutBtn").onclick = () => {
-    localStorage.removeItem("user_email");
-    window.location.href = "/login.html";
-  };
+  // AUTH GUARD
+  const user = localStorage.getItem("user_email");
+  if (!user) window.location.href = "/login.html";
+  document.getElementById("userEmailSmall").innerText = user;
 
-  const fileInput = document.getElementById("fileInput");
-  const uploadBtn = document.getElementById("uploadBtn");
-  const progressArea = document.getElementById("progressArea");
-  const filesList = document.getElementById("filesList");
+  document.getElementById("logoutBtn").onclick = () => {
+    localStorage.removeItem("user_email");
+    window.location.href = "/login.html";
+  };
 
-  async function uploadFile(file) {
-    const clean = file.name.replace(/\s+/g, "_");
-    const filename = `${Date.now()}_${clean}`;
+  // DOM ELEMENTS
+  const fileInput = document.getElementById("fileInput");
+  const uploadBtn = document.getElementById("uploadBtn");
+  const progressArea = document.getElementById("progressArea");
+  const filesList = document.getElementById("filesList");
 
-    const { data, error } = await supabase.storage
-      .from("reports")
-      .upload(filename, file, { cacheControl: "3600", upsert: false });
+  async function uploadFile(file) {
+    const cleanName = file.name.replace(/\s+/g, "_");
+    const filename = `${Date.now()}_${cleanName}`;
 
-    if (error) throw error;
-    return data.path;
-  }
+    const { data, error } = await supabase.storage
+      .from("reports")
+      .upload(filename, file, { cacheControl: "3600", upsert: false });
 
-  uploadBtn.addEventListener("click", async () => {
-    const files = Array.from(fileInput.files || []);
-    if (!files.length) {
-      progressArea.innerText = "Please select at least one file.";
-      return;
-    }
+    if (error) throw error;
+    return data.path;
+  }
 
-    uploadBtn.disabled = true;
-    progressArea.innerText = "Uploading...";
-    filesList.innerHTML = "";
+  uploadBtn.addEventListener("click", async () => {
+    const files = Array.from(fileInput.files || []);
+    if (!files.length) {
+      progressArea.innerText = "Please select at least one file.";
+      return;
+    }
 
-    try {
-      const uploaded = [];
+    uploadBtn.disabled = true;
+    progressArea.innerText = "Uploading...";
+    filesList.innerHTML = "";
 
-      for (const f of files) {
-        const li = document.createElement("li");
-        li.innerText = `Uploading ${f.name} ...`;
-        filesList.appendChild(li);
+    try {
+      const uploaded = [];
 
-        const path = await uploadFile(f);
-        uploaded.push(path);
-        li.innerText = `Uploaded: ${path}`;
-      }
+      for (const f of files) {
+        const li = document.createElement("li");
+        li.innerText = `Uploading ${f.name} ...`;
+        filesList.appendChild(li);
 
-    // CALL BACKEND
-const resp = await fetch("/api/create-report", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    email: user,
-    title: document.getElementById("title").value || null,
-    files: uploaded
-  })
-});
+        const path = await uploadFile(f);
+        uploaded.push(path);
+        li.innerText = `Uploaded: ${path}`;
+      }
 
-const json = await resp.json();
-if (!resp.ok) throw new Error(json.error || "Failed to create report record");
+      // CALL BACKEND API
+      const resp = await fetch("/api/create-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user,
+          title: document.getElementById("title").value || null,
+          files: uploaded
+        })
+      });
 
-progressArea.innerText =
-  "Uploaded & queued. Report ID: " + (json.id || "N/A");
+      const json = await resp.json();
+      if (!resp.ok) throw new Error(json.error || "Failed to create report record");
 
-      const json = await resp.json();
-      if (!resp.ok) throw new Error(json.error || "Failed to create report record");
+      progressArea.innerText =
+        "Uploaded & queued. Report ID: " + (json.id || "N/A");
 
-      progressArea.innerText =
-        "Uploaded & queued. Report ID: " + (json.id || "N/A");
-
-    } catch (err) {
-      console.error(err);
-      progressArea.innerText = "Error: " + (err.message || err);
-    } finally {
-      uploadBtn.disabled = false;
-    }
-  });
+    } catch (err) {
+      console.error(err);
+      progressArea.innerText = "Error: " + (err.message || err);
+    } finally {
+      uploadBtn.disabled = false;
+    }
+  });
 </script>
 </body>
 </html>
