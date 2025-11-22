@@ -119,16 +119,16 @@
         li.innerText = `Uploaded: ${path}`;
       }
 
-      // 🔥 CALL YOUR BACKEND
-      const resp = await fetch("/api/create-report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: loggedInUser,
-          title: document.getElementById("title").value || null,
-          files: uploaded
-        })
-      });
+     // CALL BACKEND
+const resp = await fetch("/api/create-report", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    email: user,
+    title: document.getElementById("title").value || null,
+    files: uploaded
+  })
+});
 
       const result = await resp.json();
       if (!resp.ok) throw new Error(result.error);
