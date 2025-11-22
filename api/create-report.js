@@ -1,75 +1,107 @@
-// api/create-report.js
 export const config = { runtime: "nodejs" };
 import { createClient } from "@supabase/supabase-js";
 
-// Debug
-console.log("SERVICE KEY:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "Loaded" : "MISSING");
-console.log("URL:", process.env.SUPABASE_URL || "Missing URL");
-
-// Create Supabase client (SERVER SIDE ONLY)
+// Create Supabase client (service key only)
 const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    },
-    global: {
-      headers: {
-        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
-      }
-    }
-  }
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: { autoRefreshToken: false, persistSession: false },
+    global: {
+      headers: { Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` }
+    }
+  }
 );
 
 export default async function handler(req, res) {
-  console.log("🔥 create-report endpoint HIT:", req.method);
+  console.log("🔥 create-report endpoint HIT:", req.method);
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    // Read raw JSON body
-    let body = "";
+    // Read JSON body
+    let raw = "";
     await new Promise(resolve => {
-      req.on("data", chunk => (body += chunk));
+      req.on("data", chunk => (raw += chunk));
       req.on("end", resolve);
     });
 
     let data;
     try {
-      data = JSON.parse(body);
+      data = JSON.parse(raw);
     } catch {
       return res.status(400).json({ error: "Invalid JSON" });
     }
 
-    const { title, files, email } = data;
+    const { email, title, files } = data;
 
-    if (!files?.length || !email) {
-      return res.status(400).json({ error: "Missing required fields" });
+    if (!email || !files?.length) {
+      return res.status(400).json({ error: "Missing fields" });
     }
 
-    const { data: inserted, error } = await supabase
+    const filePath = files[0]; // first file only
+
+    // 1️⃣ Insert into Supabase
+    const { data: inserted, error: insertErr } = await supabase
       .from("reports")
       .insert({
-        email: email,
-        title: title || "Untitled Report",
-        file_path: files[0],
+        email,
+        title: title || "Untitled",
+        file_path: filePath,
         created_at: new Date().toISOString(),
+        ai_status: "processing"
       })
       .select()
       .single();
 
-    if (error) {
-      console.error("Supabase Insert Error:", error);
+    if (insertErr) {
+      console.error("Supabase Insert Error:", insertErr);
       return res.status(500).json({ error: "Failed to save report" });
     }
 
-    return res.status(200).json({ success: true, id: inserted.id });
+    const reportId = inserted.id;
+
+    // 2️⃣ Send file path to AMI AI endpoint
+    const aiResponse = await fetch(
+      "https://worm-this-tables-touch.trycloudflare.com/analyze",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          report_id: reportId,
+          file_path: filePath
+        })
+      }
+    );
+
+    let aiJson = null;
+
+    try {
+      aiJson = await aiResponse.json();
+    } catch {
+      aiJson = { error: "Invalid AI response" };
+    }
+
+    // 3️⃣ Save AI result in Supabase
+    await supabase
+      .from("reports")
+      .update({
+        ai_status: aiJson.error ? "failed" : "complete",
+        ai_result: aiJson
+      })
+      .eq("id", reportId);
+
+    // 4️⃣ Reply to frontend
+    return res.status(200).json({
+      success: true,
+      id: reportId,
+      ai: aiJson
+    });
 
   } catch (err) {
     console.error("Server Error:", err);
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: "Server-side failure" });
   }
 }
