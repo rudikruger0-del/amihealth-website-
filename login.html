@@ -2,129 +2,133 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AMI — Login</title>
 
   <style>
-    :root {
-      --bg: #030414;
-      --muted: #98a0b3;
-      --accent: #00e0b8;
-      --accent2: #00b3ff;
-      --card-bg: rgba(255,255,255,0.04);
-      --input-bg: rgba(255,255,255,0.06);
-    }
-
     body {
       margin: 0;
-      background: linear-gradient(180deg, #020214, #07102a);
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      color: #e9f2fb;
-    }
-
-    .wrap {
-      max-width: 420px;
-      margin: 80px auto;
-      padding: 22px;
+      font-family: Inter, system-ui, sans-serif;
+      background: radial-gradient(circle at top, #071a33, #02030f);
+      color: #eaf6ff;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .card {
-      background: var(--card-bg);
+      width: 100%;
+      max-width: 380px;
+      background: rgba(255,255,255,0.04);
+      padding: 36px;
       border-radius: 14px;
-      padding: 32px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 30px rgba(0, 240, 200, 0.15);
+      border: 1px solid rgba(255,255,255,0.07);
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .logo {
       display: block;
-      margin: 0 auto 18px;
-      height: 62px;
+      margin: 0 auto 16px;
+      width: 72px;
+      filter: drop-shadow(0 0 8px rgba(0,255,220,0.25));
     }
 
     h2 {
-      margin: 0 0 8px;
-      color: #fff;
       text-align: center;
-      font-size: 26px;
-      font-weight: 800;
+      margin: 0 0 10px;
+      font-weight: 700;
+      letter-spacing: .5px;
     }
 
     p.lead {
-      color: var(--muted);
       text-align: center;
-      margin: 0 0 22px;
+      color: #9bb3c9;
+      margin-bottom: 22px;
       font-size: 14px;
     }
 
     label {
-      display: block;
-      margin: 12px 0 6px;
       font-size: 13px;
-      color: var(--muted);
+      color: #9bb3c9;
+      margin-bottom: 6px;
+      display: block;
     }
 
     input {
       width: 100%;
       padding: 12px;
       border-radius: 8px;
-      background: var(--input-bg);
       border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.06);
       color: #fff;
       font-size: 15px;
+      margin-bottom: 14px;
     }
 
     .btn {
       width: 100%;
+      background: linear-gradient(90deg, #00e0b8, #00b7ff);
       padding: 12px;
-      margin-top: 18px;
+      border: none;
       border-radius: 10px;
-      border: 0;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      color: #001319;
-      font-weight: 800;
       font-size: 16px;
+      font-weight: 700;
+      color: #001821;
       cursor: pointer;
+      margin-top: 6px;
+      box-shadow: 0 0 10px rgba(0, 255, 220, 0.25);
     }
 
     #status {
-      height: 22px;
-      margin-top: 10px;
       text-align: center;
-      font-size: 14px;
-      font-weight: 600;
+      height: 20px;
+      font-size: 13px;
+      margin-top: 8px;
+      color: #ffb3b3;
     }
 
     .small {
-      margin-top: 16px;
+      margin-top: 18px;
       text-align: center;
       font-size: 13px;
-      color: var(--muted);
+      color: #9bb3c9;
+    }
+
+    .small a {
+      color: #00e0ff;
+      text-decoration: none;
     }
   </style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="card">
-      <img src="/logo.png" class="logo" alt="AMI">
 
-      <h2>AMI Login</h2>
-      <p class="lead">Secure access for medical professionals</p>
+  <div class="card">
+    <img src="/logo.png" class="logo" alt="AMI Logo" />
 
-      <label>Email</label>
-      <input id="email" type="email" placeholder="you@hospital.co.za">
+    <h2>Welcome to AMI</h2>
+    <p class="lead">Secure access for medical professionals</p>
 
-      <label>Password</label>
-      <input id="password" type="password" placeholder="Password">
+    <label>Email</label>
+    <input id="email" type="email" placeholder="you@hospital.co.za" />
 
-      <button id="loginBtn" class="btn">Login</button>
+    <label>Password</label>
+    <input id="password" type="password" placeholder="••••••••" />
 
-      <div id="status"></div>
+    <button id="loginBtn" class="btn">Login</button>
 
-      <div class="small">
-        Need access? Contact <a href="mailto:info@amihealth.co.za" style="color:var(--accent)">info@amihealth.co.za</a>
-      </div>
+    <div id="status"></div>
+
+    <div class="small">
+      Need access? Contact <a href="mailto:info@amihealth.co.za">info@amihealth.co.za</a>
     </div>
   </div>
 
@@ -132,42 +136,74 @@
   import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
   const SUPA_URL = "https://tbyttsfztuudyqbrkonm.supabase.co";
-  const SUPA_ANON = "YOUR ANON KEY HERE";
+  const SUPA_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieXR0c2Z6dHV1ZHlxYnJrb25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MzA1MzgsImV4cCI6MjA3OTAwNjUzOH0.7T0S4_kkoWosdbmjlwtfSYzBcyipcPg1Fm8kIMa43uo";
 
   const supabase = createClient(SUPA_URL, SUPA_ANON);
   const statusEl = document.getElementById("status");
 
+  // -------------------------------------------------------
+  // AUTO-LOGIN HANDLER (Magic Link / Password Reset)
+  // -------------------------------------------------------
+  const hash = window.location.hash;
+  if (hash.includes("access_token")) {
+    const params = new URLSearchParams(hash.substring(1));
+    const access_token = params.get("access_token");
+    const refresh_token = params.get("refresh_token");
+
+    if (access_token) {
+      const { data, error } = await supabase.auth.setSession({
+        access_token,
+        refresh_token,
+      });
+
+      if (!error) {
+        localStorage.setItem("user_email", data.user.email);
+        window.location.href = "/dashboard.html";
+      }
+    }
+  }
+
+  // -------------------------------------------------------
+  // LOGIN BUTTON
+  // -------------------------------------------------------
   document.getElementById("loginBtn").onclick = async () => {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
 
     if (!email || !password) {
-      statusEl.style.color = "#ffb3b3";
-      statusEl.textContent = "Email & password required";
+      statusEl.textContent = "Please enter both fields";
       return;
     }
 
-    statusEl.style.color = "yellow";
+    statusEl.style.color = "#ffe29e";
     statusEl.textContent = "Logging in...";
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
     if (error) {
-      statusEl.style.color = "#ff6b6b";
+      statusEl.style.color = "#ff8a8a";
       statusEl.textContent = "Invalid email or password";
       return;
     }
 
-    // Save user email
     localStorage.setItem("user_email", email);
 
-    statusEl.style.color = "#4effc8";
-    statusEl.textContent = "Success. Redirecting...";
+    statusEl.style.color = "#8affc1";
+    statusEl.textContent = "Success — redirecting...";
 
     setTimeout(() => {
       window.location.href = "/dashboard.html";
-    }, 700);
+    }, 500);
   };
+
+  // Allow Enter key to submit
+  document.addEventListener("keydown", e => {
+    if (e.key === "Enter") document.getElementById("loginBtn").click();
+  });
 </script>
+
 </body>
 </html>
